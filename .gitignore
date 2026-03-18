@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Logs
+logs/*.log
+logs/*.json
+
+# Models (large binary files)
+models/sentiment/best_model/model.safetensors
+models/sentiment/best_model/pytorch_model.bin
+models/sentiment/classifier_weights.pt
+
+# HuggingFace cache
+.cache/
+
+# Data (large files)
+data/sentiment/raw/
+data/sentiment/augmented/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Environment files
+.env
+.env.local
+*.env
+
+# Test artifacts
+.pytest_cache/
+htmlcov/
+.coverage
+
+# Temp
+*.tmp
+*.bak
+*.swp

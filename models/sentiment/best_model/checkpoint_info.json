@@ -1,0 +1,6 @@
+{
+  "model_name": "aubmindlab/bert-base-arabertv02",
+  "num_labels": 3,
+  "label_mapping": {"negative": 0, "neutral": 1, "positive": 2},
+  "note": "ArabicBERT base model - ready for inference"
+}

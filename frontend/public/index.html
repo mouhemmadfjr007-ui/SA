@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sentiment Arabia - نظام تحليل المشاعر</title>
+<style>
+:root {
+  --primary: #1a56db;
+  --primary-dark: #1e429f;
+  --secondary: #0e9f6e;
+  --danger: #e02424;
+  --warning: #ff5a1f;
+  --neutral: #6b7280;
+  --bg: #f9fafb;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --text: #111827;
+  --text-muted: #6b7280;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background: var(--bg); color: var(--text); direction: rtl; }
+
+/* ── Header ── */
+header {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1a56db 50%, #0891b2 100%);
+  color: #fff; padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px; box-shadow: 0 2px 8px rgba(0,0,0,.2); position: sticky; top: 0; z-index: 100;
+}
+.logo { display: flex; align-items: center; gap: 12px; }
+.logo-icon { font-size: 28px; }
+.logo h1 { font-size: 22px; font-weight: 700; }
+.logo span { font-size: 12px; opacity: .8; }
+.header-status { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #34d399; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+/* ── Layout ── */
+.container { max-width: 1200px; margin: 0 auto; padding: 24px 16px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+@media(max-width: 768px) { .grid-2,.grid-3,.grid-4 { grid-template-columns: 1fr; } }
+
+/* ── Card ── */
+.card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); }
+.card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.card-header h2 { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.card-body { padding: 20px; }
+
+/* ── Tabs ── */
+.tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 24px; gap: 4px; overflow-x: auto; }
+.tab-btn { padding: 10px 20px; border: none; background: none; cursor: pointer; font-size: 14px; color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .2s; white-space: nowrap; border-radius: 8px 8px 0 0; font-family: inherit; }
+.tab-btn:hover { background: #f3f4f6; color: var(--text); }
+.tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); background: #eff6ff; font-weight: 600; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ── Forms ── */
+.form-group { margin-bottom: 16px; }
+label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+textarea, input, select {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--border);
+  border-radius: 8px; font-size: 14px; color: var(--text); background: #fff;
+  transition: border-color .2s, box-shadow .2s; font-family: inherit;
+}
+textarea:focus, input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,86,219,.15); }
+textarea { resize: vertical; min-height: 100px; }
+.options-row { display: flex; gap: 16px; flex-wrap: wrap; }
+.checkbox-group { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; }
+.checkbox-group input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; }
+
+/* ── Buttons ── */
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; font-family: inherit; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(26,86,219,.3); }
+.btn-success { background: var(--secondary); color: #fff; }
+.btn-success:hover { background: #057a55; transform: translateY(-1px); }
+.btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+.btn-outline:hover { background: #eff6ff; }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn:disabled { opacity: .5; cursor: not-allowed; transform: none !important; }
+.btn-loading::after { content: ''; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Result Card ── */
+.result-card { border-radius: var(--radius); padding: 20px; margin-top: 16px; border: 2px solid; }
+.result-positive { background: #f0fdf4; border-color: #86efac; }
+.result-negative { background: #fef2f2; border-color: #fca5a5; }
+.result-neutral  { background: #f9fafb; border-color: #d1d5db; }
+.result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.sentiment-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px; border-radius: 20px; font-size: 18px; font-weight: 700; }
+.badge-positive { background: #dcfce7; color: #16a34a; }
+.badge-negative { background: #fee2e2; color: #dc2626; }
+.badge-neutral  { background: #f3f4f6; color: #4b5563; }
+.confidence-bar { height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden; margin: 8px 0; }
+.confidence-fill { height: 100%; border-radius: 3px; transition: width .5s; }
+.fill-positive { background: #22c55e; }
+.fill-negative { background: #ef4444; }
+.fill-neutral  { background: #9ca3af; }
+
+/* ── Probabilities ── */
+.probs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+.prob-item { text-align: center; padding: 10px; border-radius: 8px; background: #f3f4f6; }
+.prob-item .prob-label { font-size: 12px; color: var(--text-muted); }
+.prob-item .prob-value { font-size: 22px; font-weight: 700; }
+.prob-positive .prob-value { color: #16a34a; }
+.prob-negative .prob-value { color: #dc2626; }
+.prob-neutral  .prob-value { color: #6b7280; }
+
+/* ── Aspects + Fraud ── */
+.aspects-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.aspect-tag { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.aspect-positive { background: #dcfce7; color: #15803d; }
+.aspect-negative { background: #fee2e2; color: #b91c1c; }
+.aspect-neutral  { background: #f3f4f6; color: #374151; }
+.fraud-alert { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; padding: 12px 16px; margin-top: 12px; }
+.fraud-alert.high { background: #fef2f2; border-color: #fca5a5; }
+.fraud-alert h4 { color: #c2410c; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+
+/* ── Stats Cards ── */
+.stat-card { background: var(--card); border-radius: var(--radius); padding: 20px; border: 1px solid var(--border); box-shadow: var(--shadow); }
+.stat-card .stat-value { font-size: 32px; font-weight: 700; color: var(--primary); }
+.stat-card .stat-label { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+.stat-card .stat-icon { font-size: 28px; float: left; opacity: .7; }
+
+/* ── History Table ── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { background: #f9fafb; padding: 10px 14px; text-align: right; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+td { padding: 10px 14px; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #f9fafb; }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+
+/* ── Batch ── */
+.batch-result { border-left: 3px solid; padding: 8px 12px; margin: 4px 0; border-radius: 0 6px 6px 0; font-size: 14px; }
+.batch-positive { border-color: #22c55e; background: #f0fdf4; }
+.batch-negative { border-color: #ef4444; background: #fef2f2; }
+.batch-neutral  { border-color: #9ca3af; background: #f9fafb; }
+
+/* ── Loading ── */
+.loading-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 999; align-items: center; justify-content: center; }
+.loading-overlay.active { display: flex; }
+.spinner { width: 48px; height: 48px; border: 4px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; }
+
+/* ── Toast ── */
+.toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 1000; display: flex; flex-direction: column; gap: 8px; }
+.toast { padding: 12px 20px; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 500; box-shadow: var(--shadow-lg); animation: slideIn .3s ease; min-width: 250px; display: flex; align-items: center; gap: 10px; }
+.toast-success { background: #059669; }
+.toast-error   { background: #dc2626; }
+.toast-info    { background: var(--primary); }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* ── Misc ── */
+.text-muted { color: var(--text-muted); font-size: 13px; }
+.mt-16 { margin-top: 16px; }
+.mb-16 { margin-bottom: 16px; }
+.flex { display: flex; align-items: center; gap: 10px; }
+.spacer { flex: 1; }
+.divider { height: 1px; background: var(--border); margin: 16px 0; }
+.info-row { display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--text-muted); }
+.info-item { display: flex; align-items: center; gap: 4px; }
+pre { background: #1f2937; color: #e5e7eb; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="logo">
+    <span class="logo-icon">🌙</span>
+    <div>
+      <h1>Sentiment Arabia</h1>
+      <span>نظام تحليل المشاعر العربي</span>
+    </div>
+  </div>
+  <div class="header-status">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">جاري التحميل...</span>
+  </div>
+</header>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="container">
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('analyze')">🔍 تحليل نص</button>
+    <button class="tab-btn" onclick="switchTab('batch')">📋 تحليل دفعي</button>
+    <button class="tab-btn" onclick="switchTab('demo')">🎯 عرض توضيحي</button>
+    <button class="tab-btn" onclick="switchTab('companies')">🏢 الشركات</button>
+    <button class="tab-btn" onclick="switchTab('stats')">📊 الإحصائيات</button>
+    <button class="tab-btn" onclick="switchTab('history')">📜 السجل</button>
+  </div>
+
+  <!-- ── Tab: Analyze ── -->
+  <div class="tab-content active" id="tab-analyze">
+    <div class="grid-2">
+      <!-- Input -->
+      <div class="card">
+        <div class="card-header">
+          <h2>📝 أدخل النص</h2>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label>النص العربي للتحليل</label>
+            <textarea id="analyzeText" placeholder="أدخل نصاً عربياً... مثال: المنتج ممتاز جداً وجودته عالية وأنصح به بشدة" rows="5"></textarea>
+          </div>
+          <div class="form-group">
+            <label>الشركة (اختياري)</label>
+            <select id="analyzeCompany">
+              <option value="">-- بدون تخصيص --</option>
+              <option value="demo_co">شركة تجريبية</option>
+            </select>
+          </div>
+          <div class="options-row mb-16">
+            <label class="checkbox-group"><input type="checkbox" id="chkAspects"> استخراج الجوانب</label>
+            <label class="checkbox-group"><input type="checkbox" id="chkFraud"> كشف الاحتيال</label>
+          </div>
+          <button class="btn btn-primary" onclick="doAnalyze()" id="btnAnalyze" style="width:100%">
+            <span>🔍</span> تحليل المشاعر
+          </button>
+
+          <!-- Quick examples -->
+          <div class="divider"></div>
+          <div class="text-muted mb-8" style="margin-bottom:8px">أمثلة سريعة:</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <button class="btn btn-outline btn-sm" onclick="setExample('المنتج ممتاز جداً وأنصح به 😊')">إيجابي</button>
+            <button class="btn btn-outline btn-sm" onclick="setExample('خدمة سيئة جداً ولن أعود 😡')">سلبي</button>
+            <button class="btn btn-outline btn-sm" onclick="setExample('المنتج عادي لا شيء مميز')">محايد</button>
+            <button class="btn btn-outline btn-sm" onclick="setExample('المنتج مزيف ومقلد وغير أصلي - احتيال')">احتيال</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div id="analyzeResult">
+        <div class="card" style="height:100%;display:flex;align-items:center;justify-content:center;min-height:300px">
+          <div style="text-align:center;color:var(--text-muted)">
+            <div style="font-size:48px;margin-bottom:12px">🔍</div>
+            <p>أدخل نصاً وانقر تحليل لرؤية النتائج</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tab: Batch ── -->
+  <div class="tab-content" id="tab-batch">
+    <div class="card">
+      <div class="card-header">
+        <h2>📋 التحليل الدفعي</h2>
+        <span class="text-muted">حتى 100 نص</span>
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label>أدخل نصاً في كل سطر</label>
+          <textarea id="batchTexts" rows="8" placeholder="المنتج رائع جداً وأنصح به
+خدمة سيئة جداً ولن أعود
+المنتج عادي لا شيء مميز
+التوصيل سريع والتغليف ممتاز"></textarea>
+        </div>
+        <div class="options-row mb-16">
+          <label class="checkbox-group"><input type="checkbox" id="batchChkAspects"> استخراج الجوانب</label>
+          <label class="checkbox-group"><input type="checkbox" id="batchChkFraud"> كشف الاحتيال</label>
+        </div>
+        <button class="btn btn-primary" onclick="doBatch()">
+          <span>🚀</span> تحليل الدفعة
+        </button>
+        <div id="batchResult" class="mt-16"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tab: Demo ── -->
+  <div class="tab-content" id="tab-demo">
+    <div class="card">
+      <div class="card-header">
+        <h2>🎯 عرض توضيحي</h2>
+        <button class="btn btn-success btn-sm" onclick="loadDemo()">▶ تشغيل العرض</button>
+      </div>
+      <div class="card-body">
+        <div id="demoResult">
+          <div style="text-align:center;padding:40px;color:var(--text-muted)">
+            <div style="font-size:48px;margin-bottom:12px">🎯</div>
+            <p>انقر "تشغيل العرض" لرؤية أمثلة متنوعة</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tab: Companies ── -->
+  <div class="tab-content" id="tab-companies">
+    <div class="grid-2">
+      <!-- Add Company -->
+      <div class="card">
+        <div class="card-header"><h2>🏢 إضافة شركة</h2></div>
+        <div class="card-body">
+          <div class="form-group"><label>معرّف الشركة</label><input id="coId" placeholder="مثال: my_company"></div>
+          <div class="form-group"><label>اسم الشركة</label><input id="coName" placeholder="مثال: شركة التقنية"></div>
+          <div class="form-group"><label>القطاع</label><input id="coIndustry" placeholder="مثال: تقنية، تجزئة، طعام"></div>
+          <button class="btn btn-primary" onclick="addCompany()"><span>➕</span> إضافة شركة</button>
+        </div>
+      </div>
+      <!-- Companies List -->
+      <div class="card">
+        <div class="card-header">
+          <h2>📋 الشركات المسجلة</h2>
+          <button class="btn btn-outline btn-sm" onclick="loadCompanies()">🔄 تحديث</button>
+        </div>
+        <div class="card-body">
+          <div id="companiesList">
+            <p class="text-muted">انقر تحديث لتحميل القائمة</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tab: Stats ── -->
+  <div class="tab-content" id="tab-stats">
+    <div class="flex mb-16" style="margin-bottom:16px">
+      <h2 style="font-size:18px;font-weight:700">📊 إحصائيات النظام</h2>
+      <div class="spacer"></div>
+      <button class="btn btn-outline btn-sm" onclick="loadStats()">🔄 تحديث</button>
+    </div>
+    <div class="grid-4" id="statsCards">
+      <div class="stat-card"><span class="stat-icon">🔄</span><div class="stat-value" id="s-total">--</div><div class="stat-label">إجمالي التحليلات</div></div>
+      <div class="stat-card"><span class="stat-icon">⚡</span><div class="stat-value" id="s-latency">--</div><div class="stat-label">متوسط زمن الاستجابة (ms)</div></div>
+      <div class="stat-card"><span class="stat-icon">💾</span><div class="stat-value" id="s-cache">--</div><div class="stat-label">معدل الإصابة بالكاش</div></div>
+      <div class="stat-card"><span class="stat-icon">🤖</span><div class="stat-value" id="s-model">--</div><div class="stat-label">حالة النموذج</div></div>
+    </div>
+    <div class="grid-2 mt-16" style="margin-top:16px">
+      <div class="card">
+        <div class="card-header"><h2>📊 توزيع المشاعر</h2></div>
+        <div class="card-body" id="sentimentDist">
+          <p class="text-muted">انقر تحديث لتحميل البيانات</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h2>🔧 معلومات النظام</h2></div>
+        <div class="card-body" id="systemInfo">
+          <p class="text-muted">انقر تحديث لتحميل البيانات</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tab: History ── -->
+  <div class="tab-content" id="tab-history">
+    <div class="card">
+      <div class="card-header">
+        <h2>📜 سجل التحليلات</h2>
+        <button class="btn btn-outline btn-sm" onclick="loadHistory()">🔄 تحديث</button>
+      </div>
+      <div class="card-body">
+        <div id="historyTable">
+          <p class="text-muted">انقر تحديث لعرض السجل</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+
+// ─── Helpers ──────────────────────────────────────────────────
+function showToast(msg, type='info') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  const icons = {success:'✅', error:'❌', info:'ℹ️'};
+  t.className = `toast toast-${type}`;
+  t.innerHTML = `<span>${icons[type]||''}</span>${msg}`;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+function loading(show) {
+  document.getElementById('loadingOverlay').classList.toggle('active', show);
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  const tabs = ['analyze','batch','demo','companies','stats','history'];
+  const idx = tabs.indexOf(name);
+  if(idx >= 0) document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name === 'stats') loadStats();
+  if(name === 'companies') loadCompanies();
+  if(name === 'history') loadHistory();
+}
+
+function setExample(text) {
+  document.getElementById('analyzeText').value = text;
+}
+
+async function apiCall(path, method='GET', body=null) {
+  const opts = { method, headers: {'Content-Type':'application/json'} };
+  if(body) opts.body = JSON.stringify(body);
+  const res = await fetch(API+path, opts);
+  if(!res.ok) {
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err.detail || err.error || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+// ─── Sentiment Helpers ────────────────────────────────────────
+const sentColors  = {positive:'badge-positive', negative:'badge-negative', neutral:'badge-neutral'};
+const sentLabels  = {positive:'إيجابي ✨', negative:'سلبي 😞', neutral:'محايد 😐'};
+const sentIcons   = {positive:'🟢', negative:'🔴', neutral:'⚪'};
+const fillClass   = {positive:'fill-positive', negative:'fill-negative', neutral:'fill-neutral'};
+const cardClass   = {positive:'result-positive', negative:'result-negative', neutral:'result-neutral'};
+
+function buildResultCard(r) {
+  const s = r.sentiment;
+  const aspects = r.aspects && r.aspects.length ? `
+    <div style="margin-top:14px">
+      <div style="font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:6px">الجوانب المُكتشَفة</div>
+      <div class="aspects-grid">
+        ${r.aspects.map(a=>`<span class="aspect-tag aspect-${s}">${a.aspect}</span>`).join('')}
+      </div>
+    </div>` : '';
+  const fraud = r.fraud_detection && r.fraud_detection.is_fraud_risk ? `
+    <div class="fraud-alert ${r.fraud_detection.risk_level}">
+      <h4>⚠️ إشارات احتيال محتملة (${r.fraud_detection.risk_level})</h4>
+      <p style="font-size:12px;margin-top:4px;color:#92400e">${r.fraud_detection.signals.map(x=>x.signal).join(' • ')}</p>
+    </div>` : '';
+  return `
+    <div class="result-card ${cardClass[s]||''}">
+      <div class="result-header">
+        <span class="sentiment-badge ${sentColors[s]||''}">${sentLabels[s]||s}</span>
+        <span class="text-muted" style="font-size:12px">${r.method||''} · ${r.latency_ms||0}ms${r.from_cache?' · 💾كاش':''}</span>
+      </div>
+      <div class="confidence-bar">
+        <div class="confidence-fill ${fillClass[s]||''}" style="width:${Math.round((r.confidence||0)*100)}%"></div>
+      </div>
+      <div class="text-muted" style="font-size:13px;margin-bottom:10px">
+        الثقة: ${Math.round((r.confidence||0)*100)}%
+      </div>
+      <div class="probs-grid">
+        <div class="prob-item prob-negative">
+          <div class="prob-label">سلبي</div>
+          <div class="prob-value">${Math.round((r.probabilities?.negative||0)*100)}%</div>
+        </div>
+        <div class="prob-item prob-neutral">
+          <div class="prob-label">محايد</div>
+          <div class="prob-value">${Math.round((r.probabilities?.neutral||0)*100)}%</div>
+        </div>
+        <div class="prob-item prob-positive">
+          <div class="prob-label">إيجابي</div>
+          <div class="prob-value">${Math.round((r.probabilities?.positive||0)*100)}%</div>
+        </div>
+      </div>
+      ${aspects}${fraud}
+    </div>`;
+}
+
+// ─── Analyze ──────────────────────────────────────────────────
+async function doAnalyze() {
+  const text = document.getElementById('analyzeText').value.trim();
+  if(!text) { showToast('أدخل نصاً أولاً','error'); return; }
+  const btn = document.getElementById('btnAnalyze');
+  btn.disabled = true; btn.classList.add('btn-loading');
+  try {
+    const r = await apiCall('/api/v1/analyze', 'POST', {
+      text,
+      company_id: document.getElementById('analyzeCompany').value || null,
+      include_aspects: document.getElementById('chkAspects').checked,
+      include_fraud:   document.getElementById('chkFraud').checked
+    });
+    document.getElementById('analyzeResult').innerHTML = `
+      <div class="card" style="height:100%">
+        <div class="card-header"><h2>📊 نتيجة التحليل</h2></div>
+        <div class="card-body">
+          <div class="text-muted" style="margin-bottom:10px;font-size:13px">"${text.substring(0,100)}..."</div>
+          ${buildResultCard(r)}
+        </div>
+      </div>`;
+    showToast('تم التحليل بنجاح ✓','success');
+  } catch(e) {
+    showToast('خطأ: '+e.message,'error');
+    document.getElementById('analyzeResult').innerHTML = `<div class="card"><div class="card-body"><p style="color:var(--danger)">❌ ${e.message}</p></div></div>`;
+  } finally {
+    btn.disabled = false; btn.classList.remove('btn-loading');
+  }
+}
+
+// ─── Batch ────────────────────────────────────────────────────
+async function doBatch() {
+  const raw = document.getElementById('batchTexts').value;
+  const texts = raw.split('\n').map(t=>t.trim()).filter(t=>t.length > 0);
+  if(!texts.length) { showToast('أدخل نصوصاً أولاً','error'); return; }
+  loading(true);
+  try {
+    const r = await apiCall('/api/v1/analyze/batch', 'POST', {
+      texts,
+      include_aspects: document.getElementById('batchChkAspects').checked,
+      include_fraud:   document.getElementById('batchChkFraud').checked
+    });
+    const dist = r.summary?.distribution || {};
+    let html = `
+      <div class="info-row mb-16" style="margin-bottom:12px">
+        <span class="info-item">📊 إجمالي: <strong>${r.total}</strong></span>
+        <span class="info-item">🟢 إيجابي: <strong>${dist.positive||0}</strong></span>
+        <span class="info-item">🔴 سلبي: <strong>${dist.negative||0}</strong></span>
+        <span class="info-item">⚪ محايد: <strong>${dist.neutral||0}</strong></span>
+        <span class="info-item">⚡ ${r.summary?.total_latency_ms||0}ms</span>
+      </div>`;
+    r.results.forEach((res, i) => {
+      const s = res.sentiment;
+      html += `<div class="batch-result batch-${s}">
+        <span style="font-weight:600">${sentIcons[s]||''} ${res.sentiment_ar}</span>
+        <span class="text-muted" style="margin-right:8px">(${Math.round((res.confidence||0)*100)}%)</span>
+        <span style="font-size:13px">${texts[i].substring(0,80)}${texts[i].length>80?'...':''}</span>
+      </div>`;
+    });
+    document.getElementById('batchResult').innerHTML = html;
+    showToast(`تم تحليل ${r.total} نص بنجاح`,'success');
+  } catch(e) {
+    showToast('خطأ: '+e.message,'error');
+  } finally {
+    loading(false);
+  }
+}
+
+// ─── Demo ─────────────────────────────────────────────────────
+async function loadDemo() {
+  loading(true);
+  try {
+    const r = await apiCall('/api/v1/analyze/demo', 'POST');
+    let html = '<div style="display:flex;flex-direction:column;gap:16px">';
+    r.demo_results.forEach(item => {
+      html += `
+        <div class="result-card ${cardClass[item.sentiment]||''}">
+          <div style="font-size:14px;font-weight:600;margin-bottom:8px">"${item.text}"</div>
+          ${buildResultCard({...item, from_cache:false})}
+        </div>`;
+    });
+    html += '</div>';
+    document.getElementById('demoResult').innerHTML = html;
+    showToast('تم تحميل العرض التوضيحي','success');
+  } catch(e) {
+    showToast('خطأ: '+e.message,'error');
+  } finally {
+    loading(false);
+  }
+}
+
+// ─── Companies ────────────────────────────────────────────────
+async function addCompany() {
+  const id = document.getElementById('coId').value.trim();
+  const name = document.getElementById('coName').value.trim();
+  const industry = document.getElementById('coIndustry').value.trim();
+  if(!id || !name) { showToast('أدخل المعرّف والاسم','error'); return; }
+  try {
+    await apiCall('/api/v1/companies', 'POST', {id, name, industry});
+    showToast('تمت إضافة الشركة بنجاح ✓','success');
+    document.getElementById('coId').value = '';
+    document.getElementById('coName').value = '';
+    document.getElementById('coIndustry').value = '';
+    loadCompanies();
+    // Update company dropdown
+    const sel = document.getElementById('analyzeCompany');
+    const opt = document.createElement('option');
+    opt.value = id; opt.textContent = name;
+    sel.appendChild(opt);
+  } catch(e) {
+    showToast('خطأ: '+e.message,'error');
+  }
+}
+
+async function loadCompanies() {
+  try {
+    const r = await apiCall('/api/v1/companies');
+    const list = document.getElementById('companiesList');
+    if(!r.companies?.length) { list.innerHTML = '<p class="text-muted">لا توجد شركات مسجلة</p>'; return; }
+    list.innerHTML = r.companies.map(co=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+        <div>
+          <div style="font-weight:600">${co.name}</div>
+          <div class="text-muted">${co.industry||'--'} · ${co.id}</div>
+        </div>
+        <span class="badge badge-positive" style="background:#dbeafe;color:#1e40af">🏢</span>
+      </div>`).join('');
+  } catch(e) {
+    showToast('خطأ تحميل الشركات','error');
+  }
+}
+
+// ─── Stats ────────────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const r = await apiCall('/api/v1/stats');
+    const s = r.summary;
+    document.getElementById('s-total').textContent   = (s.total_analyses||0).toLocaleString();
+    document.getElementById('s-latency').textContent = (s.avg_latency_ms||0).toFixed(1);
+    document.getElementById('s-cache').textContent   = ((s.cache_hit_rate||0)*100).toFixed(0)+'%';
+    document.getElementById('s-model').textContent   = s.model_status === 'active' ? '✅ نشط' : '⚠️ احتياطي';
+
+    const dist = s.sentiment_distribution || {};
+    const total = Object.values(dist).reduce((a,b)=>a+b, 0);
+    const bars = ['positive','negative','neutral'].map(k => {
+      const count = dist[k]||0;
+      const pct = total ? Math.round(count/total*100) : 0;
+      return `<div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px">
+          <span>${sentLabels[k]||k}</span><span>${count} (${pct}%)</span>
+        </div>
+        <div class="confidence-bar"><div class="confidence-fill ${fillClass[k]}" style="width:${pct}%"></div></div>
+      </div>`;
+    }).join('');
+    document.getElementById('sentimentDist').innerHTML = total ? bars : '<p class="text-muted">لا توجد بيانات بعد</p>';
+
+    const eng = r.engine;
+    document.getElementById('systemInfo').innerHTML = `
+      <div style="font-size:13px;display:grid;gap:8px">
+        <div style="display:flex;justify-content:space-between"><span class="text-muted">النموذج</span><strong>${eng.model_loaded?'✅ محمّل':'❌ غير محمّل'}</strong></div>
+        <div style="display:flex;justify-content:space-between"><span class="text-muted">وقت التحميل</span><strong>${(eng.load_time_s||0).toFixed(1)}s</strong></div>
+        <div style="display:flex;justify-content:space-between"><span class="text-muted">الكاش (حجم)</span><strong>${eng.cache?.size||0} / ${eng.cache?.capacity||0}</strong></div>
+        <div style="display:flex;justify-content:space-between"><span class="text-muted">إصابات الكاش</span><strong>${eng.cache?.hits||0}</strong></div>
+        <div style="display:flex;justify-content:space-between"><span class="text-muted">إجمالي الطلبات</span><strong>${eng.total_requests||0}</strong></div>
+      </div>`;
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+// ─── History ──────────────────────────────────────────────────
+async function loadHistory() {
+  try {
+    const r = await apiCall('/api/v1/history?limit=50');
+    const wrap = document.getElementById('historyTable');
+    if(!r.history?.length) { wrap.innerHTML = '<p class="text-muted">لا يوجد سجل بعد</p>'; return; }
+    const rows = r.history.slice().reverse().map(h=>`
+      <tr>
+        <td>${h.text_preview?.substring(0,60)||'--'}${(h.text_preview?.length>60)?'...':''}</td>
+        <td><span class="badge ${sentColors[h.sentiment]||''}">${sentLabels[h.sentiment]||h.sentiment}</span></td>
+        <td>${Math.round((h.confidence||0)*100)}%</td>
+        <td>${h.company_id||'--'}</td>
+        <td class="text-muted">${new Date(h.timestamp).toLocaleString('ar')}</td>
+      </tr>`).join('');
+    wrap.innerHTML = `<div class="table-wrap">
+      <table>
+        <thead><tr><th>النص</th><th>المشاعر</th><th>الثقة</th><th>الشركة</th><th>التاريخ</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+// ─── Health Check ─────────────────────────────────────────────
+async function checkHealth() {
+  try {
+    const r = await apiCall('/api/v1/health');
+    const dot = document.getElementById('statusDot');
+    const txt = document.getElementById('statusText');
+    if(r.model_loaded) {
+      dot.style.background = '#34d399';
+      txt.textContent = 'النموذج نشط ✅';
+    } else {
+      dot.style.background = '#fbbf24';
+      txt.textContent = 'وضع احتياطي ⚠️';
+    }
+  } catch {
+    document.getElementById('statusDot').style.background = '#ef4444';
+    document.getElementById('statusText').textContent = 'الخادم غير متاح ❌';
+  }
+}
+
+// ─── Init ─────────────────────────────────────────────────────
+checkHealth();
+setInterval(checkHealth, 30000);
+
+// Allow Enter key in analyze
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('analyzeText')?.addEventListener('keydown', e => {
+    if(e.ctrlKey && e.key === 'Enter') doAnalyze();
+  });
+});
+</script>
+</body>
+</html>

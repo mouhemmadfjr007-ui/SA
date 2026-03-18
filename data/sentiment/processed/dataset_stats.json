@@ -1,0 +1,16 @@
+{
+  "total_samples": 15000,
+  "train_size": 10506,
+  "val_size": 2244,
+  "test_size": 2250,
+  "label_distribution": {
+    "negative": 5000,
+    "neutral": 5000,
+    "positive": 5000
+  },
+  "label_mapping": {
+    "negative": 0,
+    "neutral": 1,
+    "positive": 2
+  }
+}
