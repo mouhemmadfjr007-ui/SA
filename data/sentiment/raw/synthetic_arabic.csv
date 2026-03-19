@@ -1,0 +1,153 @@
+﻿text,sentiment,source
+المنتج ممتاز جداً وجودته عالية، سعيد جداً بشرائه,positive,synthetic_arabic
+خدمة العملاء رائعة والتوصيل كان سريعاً جداً,positive,synthetic_arabic
+أنصح الجميع بهذا المنتج، يستحق كل ريال,positive,synthetic_arabic
+تجربة تسوق مميزة، سأعود للشراء مجدداً بالتأكيد,positive,synthetic_arabic
+التغليف أنيق والمنتج طابق الوصف تماماً,positive,synthetic_arabic
+أفضل موقع تسوق استخدمته، سهل وسريع وموثوق,positive,synthetic_arabic
+المنتج وصل بحالة ممتازة والسعر معقول جداً,positive,synthetic_arabic
+سرعة التوصيل فاقت توقعاتي، شكراً لكم,positive,synthetic_arabic
+جودة المنتج أفضل مما توقعت، راضٍ تماماً,positive,synthetic_arabic
+فريق الدعم الفني محترف ومتعاون ويحل المشاكل بسرعة,positive,synthetic_arabic
+الطعام لذيذ والخدمة سريعة والمكان نظيف ومريح,positive,synthetic_arabic
+أحسن مطعم جربته، طعامهم طازج ومكوناته طبيعية,positive,synthetic_arabic
+الوجبة كانت شهية جداً والكمية وافرة والسعر مناسب,positive,synthetic_arabic
+خدمة ممتازة وطعام رائع سنعود إليهم بالتأكيد,positive,synthetic_arabic
+أجود طعام أكلته في المنطقة، الطاهي محترف جداً,positive,synthetic_arabic
+التطبيق رائع وسهل الاستخدام وخالٍ من الأخطاء,positive,synthetic_arabic
+تحديث ممتاز حسّن الأداء كثيراً، شكراً للفريق,positive,synthetic_arabic
+الموقع الإلكتروني سريع وواجهته جميلة وسهلة التصفح,positive,synthetic_arabic
+أداء التطبيق ممتاز، لا تعليق، تجربة مثالية,positive,synthetic_arabic
+البرنامج احترافي وسهل التعلم ويوفر وقتاً كبيراً,positive,synthetic_arabic
+الفندق رائع والغرف نظيفة والإفطار لذيذ ومتنوع,positive,synthetic_arabic
+موقع الفندق مثالي وطاقم العمل محترف ومرحب,positive,synthetic_arabic
+تجربة إقامة لا تنسى، سأعود إليهم بكل تأكيد,positive,synthetic_arabic
+المنتجع جميل جداً ومرافقه متكاملة والخدمة ممتازة,positive,synthetic_arabic
+الدورة مفيدة جداً والمدرب متمكن وأسلوبه ممتاز,positive,synthetic_arabic
+تعلمت الكثير من هذا الكتاب، أوصي به بشدة,positive,synthetic_arabic
+المحتوى التعليمي منظم ومفيد وشامل لكل جوانب الموضوع,positive,synthetic_arabic
+المنتج الصحي أعطى نتائج ممتازة خلال أسبوعين فقط,positive,synthetic_arabic
+النادي الرياضي مجهز جيداً والمدربون محترفون ومتعاونون,positive,synthetic_arabic
+أفضل مكمل غذائي جربته، نتائج واضحة وإيجابية,positive,synthetic_arabic
+السيارة رائعة وأداؤها ممتاز على الطريق وتوفيرها للوقود عالٍ,positive,synthetic_arabic
+المركبة مريحة جداً وتقنياتها متطورة وسعرها مناسب,positive,synthetic_arabic
+خدمة البنك الإلكترونية سهلة وآمنة وسريعة جداً,positive,synthetic_arabic
+التطبيق البنكي ممتاز وسهّل كل معاملاتي المالية,positive,synthetic_arabic
+تجربة رائعة جداً سأوصي بها لجميع أصدقائي وعائلتي,positive,synthetic_arabic
+أفضل قرار اتخذته كان اختيار هذه الخدمة,positive,synthetic_arabic
+نعم أنصح به بشدة، لن تندم على هذا القرار,positive,synthetic_arabic
+ممتاز ممتاز ممتاز، لا يوجد أفضل من هذا أبداً,positive,synthetic_arabic
+كل شيء مثالي من البداية إلى النهاية، شكراً جزيلاً,positive,synthetic_arabic
+منتج عالي الجودة يستحق كل التقييمات الإيجابية التي يحصل عليها,positive,synthetic_arabic
+شحن سريع في نفس اليوم وتغليف ممتاز واحترافي,positive,synthetic_arabic
+المنتج أصلي ١٠٠٪ وبسعر أقل من السوق بكثير,positive,synthetic_arabic
+سهولة الاسترجاع والاستبدال والفريق متعاون جداً,positive,synthetic_arabic
+أفضل موقع تسوق في المنطقة، خدمة ما بعد البيع ممتازة,positive,synthetic_arabic
+المنتج وصل مكسوراً والتغليف كان سيئاً جداً,negative,synthetic_arabic
+جودة المنتج أقل بكثير مما هو معروض في الصور,negative,synthetic_arabic
+التوصيل تأخر أسبوعاً كاملاً دون أي إشعار,negative,synthetic_arabic
+خدمة العملاء لا تستجيب وتتجاهل الشكاوى المتكررة,negative,synthetic_arabic
+المنتج مغشوش ولا يشبه الوصف المكتوب في الإعلان,negative,synthetic_arabic
+طلبت استرداد المال منذ أسبوعين ولم يحدث شيء حتى الآن,negative,synthetic_arabic
+أسوأ تجربة شراء في حياتي، لن أعود لهذا الموقع,negative,synthetic_arabic
+الموقع يأخذ المال ولا يوصل المنتج، عملية نصب واضحة,negative,synthetic_arabic
+السعر مبالغ فيه جداً مقارنة بالجودة المتردية,negative,synthetic_arabic
+لا ينصح به أبداً، ضياع مال وقت وجهد,negative,synthetic_arabic
+الطعام كان بارداً ومذاقه سيئ جداً ولا يؤكل,negative,synthetic_arabic
+الخدمة كانت بطيئة جداً وتجاهلوني طوال الوقت,negative,synthetic_arabic
+المطعم غير نظيف والحمامات كارثة، لن أعود هنا,negative,synthetic_arabic
+الطعام غير طازج وكان له رائحة سيئة واضحة,negative,synthetic_arabic
+دفعت مبلغاً كبيراً مقابل وجبة رديئة لا تستحق,negative,synthetic_arabic
+التطبيق يتعطل باستمرار ولا يعمل كما هو مفترض,negative,synthetic_arabic
+الموقع بطيء جداً ومليء بالأخطاء ويضيع البيانات,negative,synthetic_arabic
+سرقوا بياناتي الشخصية وحسابي البنكي تأثر بسببهم,negative,synthetic_arabic
+البرنامج يحتاج إلى تحسينات كثيرة جداً لأن الواجهة معقدة,negative,synthetic_arabic
+التحديث أفسد كل شيء والتطبيق أصبح أبطأ وأكثر أخطاءً,negative,synthetic_arabic
+الغرفة كانت قذرة وتحتوي على حشرات، أمر لا يقبل,negative,synthetic_arabic
+الفندق لا يستحق هذا السعر المبالغ فيه إطلاقاً,negative,synthetic_arabic
+الخدمة مهملة والطاقم غير محترف وغير متعاون,negative,synthetic_arabic
+كل الصور مزيفة والواقع أسوأ بكثير مما أُعلن,negative,synthetic_arabic
+الدورة مملة وتكرارية ولا تضيف أي معلومة جديدة,negative,synthetic_arabic
+المدرب لا يعرف شيئاً عن الموضوع الذي يدرسه,negative,synthetic_arabic
+ضياع وقت وأموال على هذا المحتوى التعليمي الرديء,negative,synthetic_arabic
+المنتج لم يعطِ أي نتيجة وآثاره الجانبية كانت مزعجة,negative,synthetic_arabic
+النادي الرياضي غير منظم والأجهزة قديمة ومعطوبة,negative,synthetic_arabic
+السيارة تعطلت بعد شهر واحد فقط من الشراء,negative,synthetic_arabic
+الوكالة لا تلتزم بوعودها ولا تصلح الأعطال المضمونة,negative,synthetic_arabic
+خسرت أموالاً بسبب أخطاء في النظام البنكي,negative,synthetic_arabic
+خدمة عملاء البنك كارثية ولا تحل أي مشكلة,negative,synthetic_arabic
+أسوأ تجربة مررت بها في حياتي كلها,negative,synthetic_arabic
+لا أنصح به أبداً وسأحذر منه كل من أعرف,negative,synthetic_arabic
+مضيعة للمال والوقت والجهد، لا قيمة له,negative,synthetic_arabic
+كل شيء كان سيئاً من البداية حتى النهاية,negative,synthetic_arabic
+لن أعود ولن أنصح به، تجربة محبطة جداً,negative,synthetic_arabic
+يستحق صفر من عشرة، أسوأ ما يمكن تخيله,negative,synthetic_arabic
+المنتج مختلف تماماً عن الصورة، لا أوصي به أبداً,negative,synthetic_arabic
+رسوم إضافية خفية لم تُذكر في الإعلان، غش واضح,negative,synthetic_arabic
+التوصيل لا يصل للعنوان المطلوب رغم تكرار الشكوى,negative,synthetic_arabic
+الموقع يأخذ الأموال ويرسل منتجات مقلدة رديئة,negative,synthetic_arabic
+المنتج جيد لكنه ليس استثنائياً، يؤدي الغرض المطلوب,neutral,synthetic_arabic
+الخدمة مقبولة لكن يمكن تحسينها في بعض النواحي,neutral,synthetic_arabic
+التوصيل جاء في الوقت المحدد والمنتج كما هو موصوف,neutral,synthetic_arabic
+الجودة متوسطة مقارنة بالسعر، لا مشكلة كبيرة,neutral,synthetic_arabic
+المنتج يؤدي وظيفته لكن لا شيء مميز يستحق الذكر,neutral,synthetic_arabic
+لا بأس به، ليس الأفضل ولكنه مقبول في هذا السعر,neutral,synthetic_arabic
+التجربة كانت عادية، لا إيجابية ولا سلبية بشكل واضح,neutral,synthetic_arabic
+الخدمة معتادة ولا شيء يميزها عن المنافسين,neutral,synthetic_arabic
+المطعم جيد لكن لا شيء مميز يجعلني أعود بشكل خاص,neutral,synthetic_arabic
+الفندق عادي يناسب المبيت السريع دون توقع الرفاهية,neutral,synthetic_arabic
+المنتج تسلمته سليماً، الجودة مقبولة لهذا السعر,neutral,synthetic_arabic
+البعض يحبه والبعض لا، هو أمر شخصي في النهاية,neutral,synthetic_arabic
+التطبيق يعمل بشكل مقبول لكن يحتاج بعض التحسينات,neutral,synthetic_arabic
+لا يختلف عن المنافسين كثيراً، نفس المستوى تقريباً,neutral,synthetic_arabic
+الأسعار معتدلة والجودة متوسطة، نتيجة منتظرة,neutral,synthetic_arabic
+ليس الأفضل ولا الأسوأ في السوق، وسط بين الاثنين,neutral,synthetic_arabic
+يمكنني الاعتماد عليه لكن أتمنى التحسين في بعض النقاط,neutral,synthetic_arabic
+الخدمة تأخرت قليلاً لكن وصلت في نهاية المطاف,neutral,synthetic_arabic
+السعر مناسب لكن الجودة لم تفاجئني بشيء,neutral,synthetic_arabic
+منتج عادي يلبي الاحتياج الأساسي دون أكثر من ذلك,neutral,synthetic_arabic
+وصلت الطلبية، الحال كما كان متوقعاً,neutral,synthetic_arabic
+لا أشتكي ولكن لا أبالغ في المدح أيضاً,neutral,synthetic_arabic
+النتيجة كانت في منتصف التوقعات تماماً,neutral,synthetic_arabic
+استلمت المنتج في الموعد ويعمل بشكل طبيعي,neutral,synthetic_arabic
+كفاءة معقولة دون مشاكل واضحة أو مزايا بارزة,neutral,synthetic_arabic
+المنتج يعمل بشكل صحيح، هذا هو المطلوب فقط,neutral,synthetic_arabic
+يناسب الحاجة الأساسية لكن يفتقر للميزات الإضافية,neutral,synthetic_arabic
+قابلت توقعاتي بالضبط، لا أكثر ولا أقل,neutral,synthetic_arabic
+خدمة معتادة في هذا المجال، تجربة مألوفة,neutral,synthetic_arabic
+عادي جداً، لكن لا شكاوى جوهرية من تجربتي,neutral,synthetic_arabic
+الأخبار محزنة جداً، نسأل الله السلامة للجميع,negative,synthetic_arabic
+أتمنى أن يتحسن الوضع قريباً للجميع,neutral,synthetic_arabic
+الأحداث الأخيرة مقلقة ومؤثرة على الجميع,negative,synthetic_arabic
+نأمل في أيام أفضل وأكثر استقراراً قادمة,neutral,synthetic_arabic
+الحدث كان مميزاً وجمع الجميع في أجواء رائعة,positive,synthetic_arabic
+المناسبة جميلة وموفقة ومنظمة بشكل احترافي رائع,positive,synthetic_arabic
+المنتج رائع كثيراً وجودته عالية، سعيد كثيراً بشرائه,positive,synthetic_arabic_aug
+خدمة العملاء رائعة والتوصيل كان سريعاً كثيراً,positive,synthetic_arabic_aug
+المنتج وصل بحالة رائعة والسعر معقول كثيراً,positive,synthetic_arabic_aug
+الوجبة كانت شهية كثيراً والكمية وافرة والسعر مناسب,positive,synthetic_arabic_aug
+خدمة رائعة وطعام رائع سنعود إليهم بالتأكيد,positive,synthetic_arabic_aug
+أجود طعام أكلته في المنطقة، الطاهي محترف كثيراً,positive,synthetic_arabic_aug
+تحديث رائع حسّن الأداء كثيراً، شكراً للفريق,positive,synthetic_arabic_aug
+أداء التطبيق رائع، لا تعليق، تجربة مثالية,positive,synthetic_arabic_aug
+المنتجع جميل كثيراً ومرافقه متكاملة والخدمة رائعة,positive,synthetic_arabic_aug
+الدورة مفيدة كثيراً والمدرب متمكن وأسلوبه رائع,positive,synthetic_arabic_aug
+المنتج الصحي أعطى نتائج رائعة خلال أسبوعين فقط,positive,synthetic_arabic_aug
+السيارة رائعة وأداؤها رائع على الطريق وتوفيرها للوقود عالٍ,positive,synthetic_arabic_aug
+المركبة مريحة كثيراً وتقنياتها متطورة وسعرها مناسب,positive,synthetic_arabic_aug
+خدمة البنك الإلكترونية سهلة وآمنة وسريعة كثيراً,positive,synthetic_arabic_aug
+التطبيق البنكي رائع وسهّل كل معاملاتي المالية,positive,synthetic_arabic_aug
+تجربة رائعة كثيراً سأوصي بها لجميع أصدقائي وعائلتي,positive,synthetic_arabic_aug
+رائع رائع رائع، لا يوجد أفضل من هذا أبداً,positive,synthetic_arabic_aug
+شحن سريع في نفس اليوم وتغليف رائع واحترافي,positive,synthetic_arabic_aug
+سهولة الاسترجاع والاستبدال والفريق متعاون كثيراً,positive,synthetic_arabic_aug
+أفضل موقع تسوق في المنطقة، خدمة ما بعد البيع رائعة,positive,synthetic_arabic_aug
+المنتج وصل مكسوراً والتغليف كان سيئاً كثيراً,negative,synthetic_arabic_aug
+السعر مبالغ فيه كثيراً مقارنة بالجودة المتردية,negative,synthetic_arabic_aug
+الطعام كان بارداً ومذاقه سيئ كثيراً ولا يؤكل,negative,synthetic_arabic_aug
+الخدمة كانت بطيئة كثيراً وتجاهلوني طوال الوقت,negative,synthetic_arabic_aug
+الموقع بطيء كثيراً ومليء بالأخطاء ويضيع البيانات,negative,synthetic_arabic_aug
+البرنامج يحتاج إلى تحسينات كثيرة كثيراً لأن الواجهة معقدة,negative,synthetic_arabic_aug
+لن أعود ولن أنصح به، تجربة محبطة كثيراً,negative,synthetic_arabic_aug
+عادي كثيراً، لكن لا شكاوى جوهرية من تجربتي,neutral,synthetic_arabic_aug
+الأخبار محزنة كثيراً، نسأل الله السلامة للجميع,negative,synthetic_arabic_aug

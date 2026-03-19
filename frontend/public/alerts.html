@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تنبيهات الاحتيال - Sentiment Arabia</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap');
+  * { font-family: 'Cairo', sans-serif; }
+  .risk-high   { border-right: 4px solid #ef4444; background: #fef2f2; }
+  .risk-medium { border-right: 4px solid #f59e0b; background: #fffbeb; }
+  .risk-low    { border-right: 4px solid #10b981; background: #f0fdf4; }
+  .slide-in { animation: slideIn 0.4s ease; }
+  @keyframes slideIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<nav class="bg-slate-900 text-white sticky top-0 z-50 shadow-xl">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-xl font-bold">S</div>
+      <div><div class="font-bold text-lg">Sentiment Arabia</div><div class="text-xs text-slate-400">تنبيهات الاحتيال</div></div>
+    </a>
+    <div class="hidden md:flex items-center gap-5 text-sm">
+      <a href="/" class="text-slate-300 hover:text-white">البحث</a>
+      <a href="/compare" class="text-slate-300 hover:text-white">المقارنة</a>
+      <a href="/dashboard" class="text-slate-300 hover:text-white">لوحة التحكم</a>
+      <a href="/alerts" class="text-red-400 font-medium"><i class="fas fa-bell ml-1"></i>التنبيهات</a>
+    </div>
+    <a href="/login" class="bg-blue-600 px-4 py-2 rounded-lg text-sm">دخول</a>
+  </div>
+</nav>
+
+<!-- Header -->
+<div class="bg-gradient-to-r from-red-900 to-slate-900 text-white py-10 px-4">
+  <div class="max-w-7xl mx-auto">
+    <div class="flex items-center gap-4 mb-3">
+      <div class="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center text-2xl">🚨</div>
+      <div>
+        <h1 class="text-3xl font-black">مركز كشف الاحتيال</h1>
+        <p class="text-slate-400 text-sm">رصد تلقائي لأنماط الاحتيال في المراجعات والتقييمات</p>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+      <div class="bg-white/10 rounded-xl p-4 text-center">
+        <div class="text-3xl font-black text-red-400" id="cnt-high">0</div>
+        <div class="text-sm text-slate-300">خطر عالي</div>
+      </div>
+      <div class="bg-white/10 rounded-xl p-4 text-center">
+        <div class="text-3xl font-black text-yellow-400" id="cnt-medium">0</div>
+        <div class="text-sm text-slate-300">خطر متوسط</div>
+      </div>
+      <div class="bg-white/10 rounded-xl p-4 text-center">
+        <div class="text-3xl font-black text-green-400" id="cnt-low">0</div>
+        <div class="text-sm text-slate-300">خطر منخفض</div>
+      </div>
+      <div class="bg-white/10 rounded-xl p-4 text-center">
+        <div class="text-3xl font-black text-white" id="cnt-total">0</div>
+        <div class="text-sm text-slate-300">إجمالي</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Patterns Info -->
+<section class="max-w-7xl mx-auto px-4 py-8">
+  <h2 class="text-xl font-bold text-gray-800 mb-5"><i class="fas fa-shield-alt ml-2 text-red-500"></i>أنماط الاحتيال المكتشفة</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white border border-red-200 rounded-xl p-4 text-center">
+      <div class="text-3xl mb-2">💣</div>
+      <h3 class="font-bold text-gray-800 text-sm mb-1">هجوم مراجعات سلبية</h3>
+      <p class="text-xs text-gray-500">موجة تقييمات سلبية متزامنة على منتج واحد</p>
+    </div>
+    <div class="bg-white border border-yellow-200 rounded-xl p-4 text-center">
+      <div class="text-3xl mb-2">🤖</div>
+      <h3 class="font-bold text-gray-800 text-sm mb-1">نشاط بوت مشبوه</h3>
+      <p class="text-xs text-gray-500">أنماط نصية متكررة تشير إلى محادثات آلية</p>
+    </div>
+    <div class="bg-white border border-orange-200 rounded-xl p-4 text-center">
+      <div class="text-3xl mb-2">⭐</div>
+      <h3 class="font-bold text-gray-800 text-sm mb-1">مدح مزيف</h3>
+      <p class="text-xs text-gray-500">تقييمات إيجابية غير مبررة بتفاصيل حقيقية</p>
+    </div>
+    <div class="bg-white border border-purple-200 rounded-xl p-4 text-center">
+      <div class="text-3xl mb-2">🎯</div>
+      <h3 class="font-bold text-gray-800 text-sm mb-1">تلاعب منافس</h3>
+      <p class="text-xs text-gray-500">مراجعات تذكر منتجات منافسة بصورة سلبية</p>
+    </div>
+  </div>
+
+  <!-- Fraud Analyzer Tool -->
+  <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+    <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-microscope ml-2 text-blue-500"></i>محلل الاحتيال المباشر</h3>
+    <div class="flex gap-3">
+      <textarea id="fraudText" rows="3" placeholder="أدخل النص لتحليله وكشف الاحتيال..."
+        class="flex-1 border-2 border-gray-200 focus:border-red-500 rounded-xl px-4 py-3 resize-none outline-none transition"></textarea>
+      <button onclick="analyzeForFraud()" class="bg-red-600 hover:bg-red-700 text-white px-6 rounded-xl font-medium transition">
+        <i class="fas fa-search block text-xl mb-1"></i>فحص
+      </button>
+    </div>
+    <div id="fraudResult" class="hidden mt-4"></div>
+  </div>
+
+  <!-- Alerts List -->
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-xl font-bold text-gray-800"><i class="fas fa-list ml-2 text-red-500"></i>التنبيهات النشطة</h2>
+    <div class="flex gap-2">
+      <button onclick="filterAlerts('all')" id="filter-all" class="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm">الكل</button>
+      <button onclick="filterAlerts('عالي')" id="filter-high" class="bg-white border border-gray-200 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">🔴 عالي</button>
+      <button onclick="filterAlerts('متوسط')" id="filter-medium" class="bg-white border border-gray-200 px-4 py-2 rounded-lg text-sm hover:bg-gray-50">🟡 متوسط</button>
+    </div>
+  </div>
+
+  <div id="alertsContainer">
+    <!-- Demo alerts if not logged in -->
+    <div id="demoAlerts">
+      <div class="risk-high rounded-xl p-5 mb-3 slide-in">
+        <div class="flex items-start justify-between mb-3">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">🚨</span>
+            <div>
+              <div class="font-bold text-gray-900">هجوم مراجعات سلبية محتمل</div>
+              <div class="text-xs text-gray-500">سامسونج جالكسي S24 Ultra • نون السعودية</div>
+            </div>
+          </div>
+          <span class="bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full">خطر عالي</span>
+        </div>
+        <p class="text-sm text-gray-700 mb-3">تم رصد 5 مراجعات سلبية في غضون ساعة واحدة على نفس المنتج مع تشابه في الصياغة</p>
+        <div class="flex gap-2">
+          <button class="bg-red-600 text-white px-4 py-1.5 rounded-lg text-sm">حجب المراجعات</button>
+          <button class="border border-red-300 text-red-600 px-4 py-1.5 rounded-lg text-sm">تحقق يدوي</button>
+          <button class="text-gray-500 text-sm mr-auto">تجاهل</button>
+        </div>
+      </div>
+      <div class="risk-medium rounded-xl p-5 mb-3 slide-in">
+        <div class="flex items-start justify-between mb-3">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">⚠️</span>
+            <div>
+              <div class="font-bold text-gray-900">مدح مبالغ فيه</div>
+              <div class="text-xs text-gray-500">طقم أدوات بوش • ساكو</div>
+            </div>
+          </div>
+          <span class="bg-yellow-100 text-yellow-700 text-xs font-bold px-3 py-1 rounded-full">خطر متوسط</span>
+        </div>
+        <p class="text-sm text-gray-700 mb-3">مراجعات تحتوي على مبالغة واضحة في الثناء دون ذكر تفاصيل حقيقية عن المنتج</p>
+        <div class="flex gap-2">
+          <button class="bg-yellow-600 text-white px-4 py-1.5 rounded-lg text-sm">وضع علامة</button>
+          <button class="text-gray-500 text-sm mr-auto">تجاهل</button>
+        </div>
+      </div>
+      <div class="risk-low rounded-xl p-5 mb-3 slide-in">
+        <div class="flex items-start justify-between mb-3">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">ℹ️</span>
+            <div>
+              <div class="font-bold text-gray-900">نص قصير مشبوه</div>
+              <div class="text-xs text-gray-500">مكيف ميديا • إكسترا</div>
+            </div>
+          </div>
+          <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">خطر منخفض</span>
+        </div>
+        <p class="text-sm text-gray-700 mb-3">مراجعات قصيرة جداً (أقل من 10 كلمات) يصعب تقييم صحتها</p>
+        <div class="flex gap-2">
+          <button class="text-gray-500 text-sm">تجاهل</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="realAlerts" class="space-y-3"></div>
+  </div>
+
+  <!-- Prevention Tips -->
+  <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 mt-8">
+    <h3 class="font-bold text-blue-800 mb-4"><i class="fas fa-lightbulb ml-2 text-yellow-500"></i>نصائح لمنع الاحتيال</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-white rounded-xl p-4 shadow-sm">
+        <div class="text-2xl mb-2">🔐</div>
+        <h4 class="font-bold text-gray-800 text-sm mb-1">تفعيل Webhook</h4>
+        <p class="text-xs text-gray-500">استقبل تنبيهات فورية عند اكتشاف أي نمط مشبوه في مراجعات موقعك</p>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm">
+        <div class="text-2xl mb-2">📊</div>
+        <h4 class="font-bold text-gray-800 text-sm mb-1">مراقبة يومية</h4>
+        <p class="text-xs text-gray-500">راجع تقارير الاحتيال اليومية من لوحة التحكم للتعرف على الأنماط</p>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm">
+        <div class="text-2xl mb-2">⚡</div>
+        <h4 class="font-bold text-gray-800 text-sm mb-1">استجابة سريعة</h4>
+        <p class="text-xs text-gray-500">تصرف في أقل من ساعة من الكشف لتقليل تأثير الهجمات على سمعتك</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="bg-slate-900 text-slate-400 text-center py-6 text-sm">
+  <p>© 2024 Sentiment Arabia | نظام كشف الاحتيال</p>
+</footer>
+
+<script>
+const API = '';
+let allAlerts = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('cnt-high').textContent = '3';
+  document.getElementById('cnt-medium').textContent = '2';
+  document.getElementById('cnt-low').textContent = '1';
+  document.getElementById('cnt-total').textContent = '6';
+
+  const token = localStorage.getItem('sa_token');
+  if (token) loadRealAlerts(token);
+});
+
+async function loadRealAlerts(token) {
+  try {
+    const r = await fetch(API + '/api/v1/company/dashboard', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    if (!r.ok) return;
+    const d = await r.json();
+    const alerts = d.fraud_alerts || [];
+    if (!alerts.length) return;
+
+    document.getElementById('demoAlerts').style.display = 'none';
+    allAlerts = alerts;
+    renderAlerts(alerts);
+
+    const high = alerts.filter(a => a.risk_level === 'high').length;
+    const med  = alerts.filter(a => a.risk_level === 'medium').length;
+    document.getElementById('cnt-high').textContent = high;
+    document.getElementById('cnt-medium').textContent = med;
+    document.getElementById('cnt-low').textContent = alerts.length - high - med;
+    document.getElementById('cnt-total').textContent = alerts.length;
+  } catch(e) {}
+}
+
+function renderAlerts(alerts) {
+  const cont = document.getElementById('realAlerts');
+  const riskClass = { 'high': 'risk-high', 'medium': 'risk-medium', 'low': 'risk-low', 'عالي': 'risk-high', 'متوسط': 'risk-medium', 'منخفض': 'risk-low' };
+  const riskIcon  = { 'high': '🚨', 'medium': '⚠️', 'low': 'ℹ️', 'عالي': '🚨', 'متوسط': '⚠️', 'منخفض': 'ℹ️' };
+  const riskLabel = { 'high': 'عالي', 'medium': 'متوسط', 'low': 'منخفض', 'عالي': 'عالي', 'متوسط': 'متوسط', 'منخفض': 'منخفض' };
+  const riskColor = { 'high': 'bg-red-100 text-red-700', 'medium': 'bg-yellow-100 text-yellow-700', 'low': 'bg-green-100 text-green-700',
+                      'عالي': 'bg-red-100 text-red-700', 'متوسط': 'bg-yellow-100 text-yellow-700', 'منخفض': 'bg-green-100 text-green-700' };
+
+  cont.innerHTML = alerts.map(a => `
+    <div class="${riskClass[a.risk_level]||'risk-low'} rounded-xl p-5 slide-in">
+      <div class="flex items-start justify-between mb-3">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl">${riskIcon[a.risk_level]||'ℹ️'}</span>
+          <div>
+            <div class="font-bold text-gray-900">${a.alert_type}</div>
+            <div class="text-xs text-gray-500">${a.product_name||''} • ${a.created_at?.split('T')[0]||''}</div>
+          </div>
+        </div>
+        <span class="${riskColor[a.risk_level]||''} text-xs font-bold px-3 py-1 rounded-full">${riskLabel[a.risk_level]||a.risk_level}</span>
+      </div>
+      <p class="text-sm text-gray-700">${a.description||''}</p>
+    </div>`).join('') || '<div class="text-center text-gray-400 py-10">لا توجد تنبيهات نشطة ✅</div>';
+}
+
+function filterAlerts(level) {
+  ['all','high','medium'].forEach(l => {
+    document.getElementById('filter-'+l)?.classList.toggle('bg-gray-800', false);
+    document.getElementById('filter-'+l)?.classList.toggle('text-white', false);
+  });
+  document.getElementById('filter-'+level)?.classList.add('bg-gray-800','text-white');
+
+  const filtered = level === 'all' ? allAlerts : allAlerts.filter(a => a.risk_level === level);
+  if (filtered.length) {
+    document.getElementById('demoAlerts').style.display = 'none';
+    renderAlerts(filtered);
+  }
+}
+
+async function analyzeForFraud() {
+  const text = document.getElementById('fraudText').value.trim();
+  if (!text) return;
+
+  const r = await fetch(API + '/api/v1/analyze/public', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text })
+  });
+  const d = await r.json();
+  const fraud = d.fraud || {};
+  const riskColors = { 'منخفض': 'bg-green-50 border-green-300', 'متوسط': 'bg-yellow-50 border-yellow-300', 'عالي': 'bg-red-50 border-red-300' };
+  const riskClass = riskColors[fraud.risk_level] || 'bg-gray-50 border-gray-300';
+
+  document.getElementById('fraudResult').innerHTML = `
+    <div class="${riskClass} border-2 rounded-xl p-4">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="text-3xl">${fraud.risk_level==='عالي'?'🚨':fraud.risk_level==='متوسط'?'⚠️':'✅'}</span>
+        <div>
+          <div class="font-bold text-gray-900">مستوى الخطر: ${fraud.risk_level||'منخفض'}</div>
+          <div class="text-sm text-gray-600">درجة الاحتيال: ${Math.round((fraud.fraud_score||0)*100)}%</div>
+        </div>
+      </div>
+      ${fraud.fraud_flags?.length ? `
+        <div class="bg-white rounded-lg p-3">
+          <div class="font-medium text-sm text-gray-700 mb-2">المشكلات المكتشفة:</div>
+          ${fraud.fraud_flags.map(f => `<div class="text-sm text-red-600 flex items-center gap-1"><i class="fas fa-exclamation-circle"></i> ${f}</div>`).join('')}
+        </div>` : '<div class="text-green-700 text-sm font-medium">✅ لم يتم اكتشاف أي مشكلات</div>'}
+    </div>`;
+  document.getElementById('fraudResult').classList.remove('hidden');
+}
+</script>
+</body>
+</html>

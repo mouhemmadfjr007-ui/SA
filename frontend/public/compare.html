@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مقارنة المنتجات - Sentiment Arabia</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap');
+  * { font-family: 'Cairo', sans-serif; }
+  .winner-card { background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%); }
+  .slide-in { animation: slideIn 0.4s ease; }
+  @keyframes slideIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  .compare-table th { position: sticky; top: 0; background: #1e293b; }
+  .best-cell { background: rgba(16,185,129,0.1); border-left: 3px solid #10b981; }
+  .sentiment-bar { height: 8px; border-radius: 4px; transition: width 1s ease; }
+</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<!-- Nav -->
+<nav class="bg-slate-900 text-white sticky top-0 z-50 shadow-xl">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-xl font-bold">S</div>
+      <div>
+        <div class="font-bold text-lg leading-tight">Sentiment Arabia</div>
+        <div class="text-xs text-slate-400">مقارنة المنتجات</div>
+      </div>
+    </a>
+    <div class="hidden md:flex items-center gap-6 text-sm">
+      <a href="/" class="text-slate-300 hover:text-white"><i class="fas fa-search ml-1"></i>البحث</a>
+      <a href="/compare" class="text-blue-400"><i class="fas fa-balance-scale ml-1"></i>المقارنة</a>
+      <a href="/dashboard" class="text-slate-300 hover:text-white"><i class="fas fa-chart-line ml-1"></i>لوحة التحكم</a>
+      <a href="/alerts" class="text-slate-300 hover:text-white"><i class="fas fa-bell ml-1"></i>التنبيهات</a>
+    </div>
+    <a href="/login" id="loginBtn" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm">دخول</a>
+  </div>
+</nav>
+
+<!-- Header -->
+<div class="bg-gradient-to-r from-slate-900 to-blue-900 text-white py-8 px-4">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-3xl font-black mb-2"><i class="fas fa-balance-scale ml-2 text-blue-400"></i>مقارنة المنتجات</h1>
+    <p class="text-slate-300">قارن حتى 5 منتجات من شركات مختلفة بناءً على المشاعر والسعر والتوفر</p>
+  </div>
+</div>
+
+<!-- Product Selector -->
+<section class="bg-white border-b py-6 px-4">
+  <div class="max-w-7xl mx-auto">
+    <h2 class="font-bold text-gray-700 mb-4">اختر المنتجات للمقارنة (2-5 منتجات)</h2>
+    <div class="flex flex-wrap gap-3 mb-4">
+      <input id="addSearch" type="text" placeholder="ابحث وأضف منتجاً..."
+        class="border-2 border-gray-200 rounded-lg px-4 py-2 flex-1 min-w-48 outline-none focus:border-blue-500">
+      <button onclick="searchToAdd()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+        <i class="fas fa-search ml-1"></i>بحث
+      </button>
+    </div>
+    <!-- Search Results for Adding -->
+    <div id="addResults" class="hidden grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 mb-4"></div>
+    <!-- Selected -->
+    <div class="flex flex-wrap gap-2" id="selectedChips">
+      <span class="text-sm text-gray-400 py-1">لم تختر أي منتج بعد</span>
+    </div>
+    <button onclick="runCompare()" id="compareNowBtn"
+      class="hidden mt-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition">
+      <i class="fas fa-magic ml-2"></i>قارن الآن
+    </button>
+  </div>
+</section>
+
+<!-- Loading -->
+<div id="compareLoading" class="hidden text-center py-16">
+  <div class="inline-block w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+  <p class="text-gray-500 font-medium">جارٍ تحليل المنتجات ومقارنتها...</p>
+</div>
+
+<!-- Results -->
+<main class="max-w-7xl mx-auto px-4 py-8" id="compareResults" style="display:none">
+
+  <!-- Winner Banner -->
+  <div id="winnerBanner" class="winner-card text-white rounded-2xl p-6 mb-8 slide-in">
+    <div class="flex items-center gap-4">
+      <div class="text-5xl">🏆</div>
+      <div>
+        <div class="text-sm font-medium opacity-80">الخيار الأفضل</div>
+        <div class="text-2xl font-black" id="winnerName">-</div>
+        <div class="text-sm opacity-80" id="winnerReason">-</div>
+      </div>
+      <div class="mr-auto text-center">
+        <div class="text-4xl font-black" id="winnerScore">-</div>
+        <div class="text-sm opacity-80">درجة التوصية</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison Matrix -->
+  <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
+    <div class="overflow-x-auto">
+      <table class="compare-table w-full text-sm">
+        <thead>
+          <tr class="text-white text-center">
+            <th class="py-4 px-4 text-right min-w-32">المعيار</th>
+            <!-- headers filled by JS -->
+          </tr>
+        </thead>
+        <tbody id="compareTableBody" class="divide-y divide-gray-100">
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Radar Chart -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white rounded-2xl shadow-lg p-6">
+      <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-spider ml-2 text-blue-600"></i>مخطط المقارنة الشاملة</h3>
+      <canvas id="radarChart" height="300"></canvas>
+    </div>
+    <div class="bg-white rounded-2xl shadow-lg p-6">
+      <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-bar-chart ml-2 text-green-600"></i>مقارنة المشاعر</h3>
+      <canvas id="sentimentCompareChart" height="300"></canvas>
+    </div>
+  </div>
+
+  <!-- Product Cards -->
+  <h3 class="text-xl font-bold text-gray-800 mb-4">تفاصيل المنتجات</h3>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="compareCards"></div>
+
+  <!-- Reviews Section -->
+  <div class="mt-8 bg-white rounded-2xl shadow-lg p-6" id="reviewsSection" style="display:none">
+    <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-comments ml-2 text-purple-600"></i>تحليل المراجعات</h3>
+    <div id="reviewsList" class="space-y-3"></div>
+  </div>
+</main>
+
+<!-- Version Comparison (single product, multi-company) -->
+<section id="versionCompare" class="max-w-7xl mx-auto px-4 pb-8" style="display:none">
+  <div class="bg-white rounded-2xl shadow-lg p-6">
+    <h3 class="text-xl font-bold text-gray-800 mb-6">
+      <i class="fas fa-store ml-2 text-orange-500"></i>نفس المنتج في متاجر مختلفة
+    </h3>
+    <div id="versionCards" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+  </div>
+</section>
+
+<script>
+const API = '';
+let selectedIds = [];
+let radarChartInst = null, sentimentChartInst = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const ids = params.get('ids');
+  const pid = params.get('product');
+
+  if (ids) {
+    selectedIds = ids.split(',').map(Number).filter(Boolean);
+    if (selectedIds.length >= 2) runCompare();
+    else if (selectedIds.length === 1) loadVersionCompare(selectedIds[0]);
+  } else if (pid) {
+    loadVersionCompare(parseInt(pid));
+  }
+});
+
+// ── Add Products ──────────────────────────────────────────────────────
+async function searchToAdd() {
+  const q = document.getElementById('addSearch').value.trim();
+  const r = await fetch(API + '/api/v1/products/search', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: q, limit: 12 })
+  });
+  const d = await r.json();
+  const cont = document.getElementById('addResults');
+  cont.innerHTML = '';
+  cont.classList.remove('hidden');
+  (d.products || []).forEach(p => {
+    const selected = selectedIds.includes(p.id);
+    cont.innerHTML += `
+      <div class="border-2 ${selected ? 'border-blue-500 bg-blue-50' : 'border-gray-200'} rounded-lg p-2 cursor-pointer hover:border-blue-400 transition text-xs"
+        onclick="toggleProduct(${p.id}, '${p.name.replace(/'/g,"\\'")}', this)">
+        <div class="font-bold text-gray-800 mb-0.5 truncate">${p.name}</div>
+        <div class="text-gray-400">${p.company_name}</div>
+        <div class="font-bold text-blue-600 mt-1">${p.price.toLocaleString()} ر.س</div>
+        ${selected ? '<div class="text-blue-600 font-bold">✓ مضاف</div>' : ''}
+      </div>`;
+  });
+}
+
+function toggleProduct(id, name, el) {
+  if (selectedIds.includes(id)) {
+    selectedIds = selectedIds.filter(x => x !== id);
+    el.classList.remove('border-blue-500', 'bg-blue-50');
+    el.classList.add('border-gray-200');
+  } else {
+    if (selectedIds.length >= 5) { alert('الحد الأقصى 5 منتجات'); return; }
+    selectedIds.push(id);
+    el.classList.add('border-blue-500', 'bg-blue-50');
+    el.classList.add('border-blue-500');
+  }
+  updateChips();
+}
+
+function updateChips() {
+  const chips = document.getElementById('selectedChips');
+  const btn = document.getElementById('compareNowBtn');
+  if (!selectedIds.length) {
+    chips.innerHTML = '<span class="text-sm text-gray-400 py-1">لم تختر أي منتج بعد</span>';
+    btn.classList.add('hidden');
+    return;
+  }
+  chips.innerHTML = selectedIds.map((id,i) =>
+    `<span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+      ${id} <button onclick="removeProduct(${i})" class="text-blue-500 hover:text-red-500 font-bold">×</button>
+    </span>`
+  ).join('');
+  if (selectedIds.length >= 2) btn.classList.remove('hidden');
+  else btn.classList.add('hidden');
+}
+
+function removeProduct(idx) {
+  selectedIds.splice(idx, 1);
+  updateChips();
+}
+
+// ── Run Compare ────────────────────────────────────────────────────────
+async function runCompare() {
+  if (selectedIds.length < 2) { alert('اختر منتجين على الأقل'); return; }
+  document.getElementById('compareLoading').classList.remove('hidden');
+  document.getElementById('compareResults').style.display = 'none';
+
+  const r = await fetch(API + '/api/v1/products/compare/multi', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ product_ids: selectedIds })
+  });
+  const d = await r.json();
+
+  document.getElementById('compareLoading').classList.add('hidden');
+  document.getElementById('compareResults').style.display = 'block';
+  renderComparison(d);
+}
+
+function renderComparison(data) {
+  const products = data.comparison || [];
+  const winner = data.winner;
+
+  // Winner
+  if (winner) {
+    document.getElementById('winnerName').textContent = `${winner.name} (${winner.company_name})`;
+    document.getElementById('winnerScore').textContent = Math.round(winner.recommendation_score) + '%';
+    document.getElementById('winnerReason').textContent =
+      `السعر: ${winner.price.toLocaleString()} ر.س • إيجابي: ${Math.round(winner.positive_pct)}% • ${winner.availability ? 'متوفر' : 'غير متوفر'}`;
+  }
+
+  // Table
+  const thead = document.querySelector('.compare-table thead tr');
+  const tbody = document.getElementById('compareTableBody');
+  thead.innerHTML = '<th class="py-4 px-4 text-right min-w-32">المعيار</th>';
+  products.forEach((p,i) => {
+    const isWinner = winner && p.id === winner.id;
+    thead.innerHTML += `<th class="py-4 px-4 text-center ${isWinner ? 'text-yellow-300' : ''}">
+      ${isWinner ? '🏆 ' : ''}${p.company_name}<br>
+      <span class="font-normal text-xs opacity-70">${p.name.substring(0,20)}</span>
+    </th>`;
+  });
+
+  const rows = [
+    { label: '💰 السعر', key: p => `${p.price.toLocaleString()} ر.س`, best: products.reduce((a,b) => a.price < b.price ? a : b) },
+    { label: '📦 التوفر', key: p => p.availability ? '✅ متوفر' : '❌ غير متوفر', best: products.find(p=>p.availability) },
+    { label: '🚚 الشحن', key: p => `${p.shipping_days} أيام - ${p.shipping_cost||'مجاني'} ر.س`, best: products.reduce((a,b) => a.shipping_days < b.shipping_days ? a : b) },
+    { label: '😊 إيجابي', key: p => `${Math.round(p.positive_pct)}%`, best: products.reduce((a,b) => a.positive_pct > b.positive_pct ? a : b) },
+    { label: '😞 سلبي', key: p => `${Math.round(p.negative_pct)}%`, best: products.reduce((a,b) => a.negative_pct < b.negative_pct ? a : b) },
+    { label: '📝 المراجعات', key: p => `${p.review_count} مراجعة`, best: products.reduce((a,b) => a.review_count > b.review_count ? a : b) },
+    { label: '🛡️ خطر الاحتيال', key: p => `${Math.round(p.fraud_risk*100)}%`, best: products.reduce((a,b) => a.fraud_risk < b.fraud_risk ? a : b) },
+    { label: '⭐ التوصية', key: p => `${Math.round(p.recommendation_score)}%`, best: winner },
+  ];
+
+  tbody.innerHTML = rows.map(row => `
+    <tr class="hover:bg-gray-50">
+      <td class="py-3 px-4 font-medium text-gray-700 text-sm">${row.label}</td>
+      ${products.map(p => `
+        <td class="py-3 px-4 text-center text-sm ${row.best && p.id === row.best.id ? 'best-cell font-bold text-green-700' : 'text-gray-600'}">
+          ${row.key(p)}
+        </td>`).join('')}
+    </tr>`).join('');
+
+  // Charts
+  const labels = products.map(p => `${p.company_name}`);
+  const colors = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6'];
+
+  // Radar
+  if (radarChartInst) radarChartInst.destroy();
+  const rc = document.getElementById('radarChart').getContext('2d');
+  radarChartInst = new Chart(rc, {
+    type: 'radar',
+    data: {
+      labels: ['التوصية','الإيجابية','السعر','التوفر','مكافحة الاحتيال'],
+      datasets: products.map((p,i) => ({
+        label: p.company_name,
+        data: [
+          p.recommendation_score,
+          p.positive_pct,
+          Math.max(0, 100 - (p.price/200)*10),
+          p.availability ? 100 : 30,
+          (1-p.fraud_risk)*100
+        ],
+        borderColor: colors[i],
+        backgroundColor: colors[i]+'33',
+        pointBackgroundColor: colors[i],
+      }))
+    },
+    options: {
+      responsive: true,
+      scales: { r: { min: 0, max: 100, ticks: { stepSize: 20 } } },
+      plugins: { legend: { labels: { font: { family: 'Cairo' } } } }
+    }
+  });
+
+  // Sentiment Bar Chart
+  if (sentimentChartInst) sentimentChartInst.destroy();
+  const sc = document.getElementById('sentimentCompareChart').getContext('2d');
+  sentimentChartInst = new Chart(sc, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'إيجابي', data: products.map(p=>Math.round(p.positive_pct)), backgroundColor: '#10b981' },
+        { label: 'سلبي',   data: products.map(p=>Math.round(p.negative_pct)), backgroundColor: '#ef4444' },
+        { label: 'محايد',  data: products.map(p=>Math.round(100-p.positive_pct-p.negative_pct)), backgroundColor: '#f59e0b' },
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: { y: { stacked: false, max: 100 }, x: { stacked: false } },
+      plugins: { legend: { labels: { font: { family: 'Cairo' } } } }
+    }
+  });
+
+  // Cards
+  const cards = document.getElementById('compareCards');
+  cards.innerHTML = products.map((p,i) => `
+    <div class="bg-white border-2 ${winner && p.id === winner.id ? 'border-yellow-400' : 'border-gray-200'} rounded-2xl p-5 slide-in">
+      ${winner && p.id === winner.id ? '<div class="bg-yellow-400 text-white text-xs font-bold px-3 py-1 rounded-full mb-3 inline-block">🏆 الأفضل</div>' : ''}
+      <div class="text-xs text-gray-400 mb-1">${p.company_name}</div>
+      <h3 class="font-bold text-gray-900 mb-3">${p.name}</h3>
+      <div class="text-2xl font-black text-blue-600 mb-3">${p.price.toLocaleString()} ر.س</div>
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between"><span>😊 إيجابي</span><span class="font-bold text-green-600">${Math.round(p.positive_pct)}%</span></div>
+        <div class="flex justify-between"><span>😞 سلبي</span><span class="font-bold text-red-500">${Math.round(p.negative_pct)}%</span></div>
+        <div class="flex justify-between"><span>📦 التوفر</span><span class="${p.availability?'text-green-600':'text-red-500'}">${p.availability?'متوفر':'غير متوفر'}</span></div>
+        <div class="flex justify-between"><span>🚚 الشحن</span><span>${p.shipping_days} أيام</span></div>
+        <div class="flex justify-between"><span>⭐ التوصية</span><span class="font-bold text-blue-600">${Math.round(p.recommendation_score)}%</span></div>
+      </div>
+    </div>`).join('');
+}
+
+// ── Version Compare (single product) ──────────────────────────────────
+async function loadVersionCompare(productId) {
+  const r = await fetch(API + `/api/v1/products/${productId}/compare`);
+  const d = await r.json();
+  if (!d.versions?.length) return;
+
+  document.getElementById('versionCompare').style.display = 'block';
+  const cont = document.getElementById('versionCards');
+  const winner = d.best_choice;
+
+  cont.innerHTML = (d.versions || []).map(v => `
+    <div class="border-2 ${winner && v.id === winner.id ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200 bg-white'} rounded-xl p-4 slide-in">
+      ${winner && v.id === winner.id ? '<div class="text-yellow-600 font-bold text-xs mb-2">🏆 الأفضل</div>' : ''}
+      <div class="font-bold text-gray-800 mb-1">${v.company_name}</div>
+      <div class="text-2xl font-black text-blue-600 mb-2">${v.price.toLocaleString()} ر.س</div>
+      <div class="space-y-1 text-xs text-gray-600">
+        <div>😊 ${Math.round(v.positive_pct)}% إيجابي</div>
+        <div>📦 ${v.availability ? 'متوفر' : 'غير متوفر'}</div>
+        <div>🚚 ${v.shipping_days} أيام ${v.shipping_cost ? '- ' + v.shipping_cost + ' ر.س' : '- مجاني'}</div>
+        <div>📝 ${v.review_count} مراجعة</div>
+        <div class="font-bold text-blue-600">⭐ ${Math.round(v.recommendation_score)}%</div>
+      </div>
+    </div>`).join('');
+
+  if (d.recommendation) {
+    cont.innerHTML = `<div class="col-span-full bg-blue-50 border border-blue-200 rounded-xl p-4 text-blue-800 font-medium">
+      ${d.recommendation}</div>` + cont.innerHTML;
+  }
+
+  // Auto-compare if 2+ versions
+  if (d.versions.length >= 2) {
+    selectedIds = d.versions.slice(0,5).map(v => v.id);
+    await runCompare();
+  }
+}
+</script>
+</body>
+</html>

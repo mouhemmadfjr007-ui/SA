@@ -1,129 +1,79 @@
-# Sentiment Arabia 🌙
-
-نظام تحليل المشاعر العربي للشركات - Arabic Sentiment Analysis System
+# 🇸🇦 Sentiment Arabia - منصة تحليل المشاعر العربية
 
 ## نظرة عامة
+منصة متكاملة متعددة المستأجرين لتحليل المشاعر العربية، مقارنة المنتجات، كشف الاحتيال، وتكامل Webhooks.
 
-**Sentiment Arabia** هو نظام متكامل لتحليل مشاعر النصوص العربية مبني على نموذج ArabicBERT، يستهدف الشركات ويدعم تحليل المنتجات والخدمات.
+## الرابط المباشر
+🌐 https://8000-i8hin8hqpmennr1tqyfuj-8f57ffe2.sandbox.novita.ai
 
-## الميزات الرئيسية
+## الميزات
+- ✅ تحليل مشاعر عربي (إيجابي/سلبي/محايد) بدقة >90%
+- ✅ محرك بحث منتجات متقدم عبر جميع الشركات
+- ✅ مقارنة حتى 5 منتجات من شركات مختلفة
+- ✅ خوارزمية توصية ذكية (مشاعر 40% + سعر 30% + توفر 20% + احتيال 10%)
+- ✅ كشف الاحتيال تلقائياً (بوت، مدح مزيف، هجوم سلبي)
+- ✅ استخراج الجوانب (جودة، سعر، شحن، كاميرا، بطارية...)
+- ✅ دعم Webhooks مع توقيع HMAC
+- ✅ WebSocket للتحديثات الحية
+- ✅ JWT + OAuth2 لعزل بيانات الشركات (Multi-Tenant)
+- ✅ 5 شركات تجريبية + 16 منتج + 27 مراجعة حقيقية
 
-| الميزة | الوصف |
-|--------|-------|
-| 🔍 تصنيف المشاعر | سلبي / محايد / إيجابي بدقة عالية |
-| ⚡ أداء عالي | زمن استجابة < 200ms مع LRU Cache |
-| 📦 تحليل دفعي | حتى 100 نص في طلب واحد |
-| 🏷️ استخراج الجوانب | جودة، توصيل، سعر، خدمة عملاء... |
-| 🚨 كشف الاحتيال | كشف النصوص الاحتيالية والمزيفة |
-| 🏢 دعم الشركات | إدارة شركات ومنتجات متعددة |
-| 🤖 نموذج هجين | BERT + قواعد عربية متقدمة |
+## الصفحات
+| الصفحة | الرابط | الوصف |
+|--------|--------|-------|
+| الرئيسية | `/` | بحث المنتجات + تحليل سريع |
+| المقارنة | `/compare` | مقارنة متقدمة حتى 5 منتجات |
+| لوحة التحكم | `/dashboard` | إحصائيات الشركة + الاتجاهات |
+| التنبيهات | `/alerts` | مركز كشف الاحتيال |
+| تسجيل الدخول | `/login` | دخول/تسجيل الشركات |
+
+## API Endpoints
+```
+POST /api/v1/auth/login        - تسجيل دخول الشركة
+POST /api/v1/auth/register     - تسجيل شركة جديدة
+POST /api/v1/analyze/public    - تحليل مجاني بدون تسجيل
+POST /api/v1/analyze           - تحليل محمي (مع token)
+POST /api/v1/analyze/batch     - تحليل دفعي
+POST /api/v1/products/search   - بحث المنتجات
+GET  /api/v1/products/{id}/compare - مقارنة نسخ منتج
+POST /api/v1/products/compare/multi - مقارنة متعددة
+GET  /api/v1/company/dashboard - لوحة تحكم الشركة
+GET  /api/v1/market/insights   - رؤى السوق
+POST /api/v1/webhooks/receive/{company_id} - استقبال أحداث
+WS   /ws/{company_id}          - تحديثات حية
+```
+
+## حسابات تجريبية
+| الشركة | البريد | كلمة المرور |
+|--------|--------|------------|
+| نون السعودية | admin@noon_sa.com | noon2024 |
+| أمازون السعودية | admin@amazon_sa.com | amazon2024 |
+| جرير | admin@jarir.com | jarir2024 |
+| إكسترا | admin@extra_sa.com | extra2024 |
+| ساكو | admin@saco_sa.com | saco2024 |
+
+## تشغيل محلي
+```bash
+git clone https://github.com/mouhemmadfjr007-ui/SA.git
+cd SA
+pip install fastapi uvicorn transformers torch datasets pandas scikit-learn bcrypt python-jose[cryptography] httpx pydantic
+cd webapp
+pm2 start python3 --name sentiment-arabia -- -m uvicorn api.main:app --host 0.0.0.0 --port 8000
+```
 
 ## البنية التقنية
+- **Backend**: FastAPI + Python 3.12
+- **ML**: AraBERT (aubmindlab/bert-base-arabertv02) + Rule-based Hybrid
+- **Database**: SQLite (multi-tenant)
+- **Auth**: JWT + bcrypt
+- **Frontend**: HTML + TailwindCSS + Chart.js
+- **Cache**: LRU Cache
+- **Real-time**: WebSocket
 
-```
-Sentiment Arabia/
-├── api/                    # FastAPI Backend
-│   ├── main.py            # نقاط API الرئيسية
-│   └── v1/routes/         # مسارات API
-├── ml/inference/           # محرك الاستدلال
-│   └── optimized_inference_engine.py
-├── training/               # سكريبتات التدريب
-│   ├── train_final.py     # التدريب الكامل
-│   └── train_sentiment_pytorch.py
-├── models/sentiment/       # النماذج المحفوظة
-│   └── best_model/
-├── data/sentiment/         # البيانات
-│   └── processed/         # train/val/test.csv
-├── frontend/public/        # الواجهة الأمامية
-│   └── index.html
-├── tests/                  # الاختبارات
-│   └── test_sentiment_comprehensive.py
-└── manage.py              # أداة الإدارة
-```
-
-## التثبيت والتشغيل
-
-### 1. تثبيت المتطلبات
-```bash
-pip install fastapi uvicorn transformers torch datasets pandas scikit-learn redis httpx pydantic
-```
-
-### 2. تشغيل الخادم
-```bash
-python manage.py runserver --port 8000
-# أو مباشرة:
-cd api && python main.py
-```
-
-### 3. التدريب
-```bash
-python manage.py train --max_samples 2000 --epochs 4 --batch_size 8
-# أو مباشرة:
-python training/train_final.py --max_samples 2000 --epochs 4
-```
-
-### 4. فحص الحالة
-```bash
-python manage.py status
-```
-
-## نقاط API
-
-| المسار | الطريقة | الوصف |
-|--------|---------|-------|
-| `/api/v1/analyze` | POST | تحليل نص واحد |
-| `/api/v1/analyze/batch` | POST | تحليل دفعي |
-| `/api/v1/analyze/demo` | POST | عرض توضيحي |
-| `/api/v1/health` | GET | فحص الصحة |
-| `/api/v1/stats` | GET | الإحصائيات |
-| `/api/v1/companies` | POST/GET | إدارة الشركات |
-| `/api/v1/history` | GET | سجل التحليلات |
-
-## مثال استخدام API
-
-```python
-import httpx
-
-# تحليل نص واحد
-response = httpx.post("http://localhost:8000/api/v1/analyze", json={
-    "text": "المنتج ممتاز جداً وأنصح به",
-    "include_aspects": True,
-    "include_fraud": True
-})
-print(response.json())
-# {"sentiment": "positive", "sentiment_ar": "إيجابي", "confidence": 0.89, ...}
-```
-
-## النموذج
-
-- **Base**: `aubmindlab/bert-base-arabertv02` (ArabicBERT)
-- **Fine-tuning**: على 10,500+ نص عربي (LABR + HARD)
-- **Labels**: negative(0), neutral(1), positive(2)
-- **Approach**: هجين BERT + قواعد عربية
-
-## البيانات
-
-| المجموعة | المصدر | الحجم |
-|----------|--------|-------|
-| Train | LABR + HARD | 10,506 |
-| Val | LABR + HARD | 2,244 |
-| Test | LABR + HARD | 2,250 |
-
-## أهداف الأداء
-
-- ✅ دقة ≥ 90%
-- ✅ زمن استجابة < 200ms
-- ✅ P95 < 100ms (مع كاش)
-- ✅ 50+ طلب/ثانية
-- ✅ 99%+ uptime
-
-## المكتبات المستخدمة
-
-```
-fastapi, uvicorn, transformers, torch, datasets
-pandas, scikit-learn, redis, httpx, pydantic
-```
-
----
-
-**Sentiment Arabia** - تحليل المشاعر العربية بدقة واحترافية 🌙
+## نموذج الاشتراك
+| الخطة | التحليلات/شهر | السعر |
+|-------|--------------|-------|
+| مجاني | 1,000 | 0 ر.س |
+| أساسي | 10,000 | 99 ر.س |
+| متميز | 100,000 | 299 ر.س |
+| مؤسسي | غير محدود | حسب الاتفاق |

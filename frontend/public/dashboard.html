@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة التحكم - Sentiment Arabia</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap');
+  * { font-family: 'Cairo', sans-serif; }
+  .sidebar { background: #0f172a; min-height: 100vh; }
+  .stat-card { background: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+  .slide-in { animation: slideIn 0.4s ease; }
+  @keyframes slideIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .metric-positive { border-right: 4px solid #10b981; }
+  .metric-negative  { border-right: 4px solid #ef4444; }
+  .metric-neutral   { border-right: 4px solid #f59e0b; }
+  .metric-blue      { border-right: 4px solid #3b82f6; }
+  .nav-active { background: rgba(59,130,246,0.2); color: #60a5fa; border-right: 3px solid #3b82f6; }
+  .sentiment-pos { color: #10b981; }
+  .sentiment-neg { color: #ef4444; }
+  .sentiment-neu { color: #f59e0b; }
+  .ws-dot { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; display: inline-block; }
+  .ws-dot.connected { background: #10b981; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+</style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+<!-- Login Gate -->
+<div id="loginGate" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm flex items-center justify-center z-50" style="display:none!important">
+  <div class="bg-white rounded-2xl p-8 w-full max-w-sm shadow-2xl">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">دخول لوحة التحكم</h2>
+    <input id="lgEmail" type="email" placeholder="البريد الإلكتروني" class="w-full border-2 border-gray-200 rounded-lg px-4 py-3 mb-3 outline-none focus:border-blue-500">
+    <input id="lgPass" type="password" placeholder="كلمة المرور" class="w-full border-2 border-gray-200 rounded-lg px-4 py-3 mb-4 outline-none focus:border-blue-500" onkeypress="if(event.key==='Enter') doLogin()">
+    <div id="lgError" class="hidden text-red-500 text-sm mb-3 text-center"></div>
+    <button onclick="doLogin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 font-bold transition">دخول</button>
+    <p class="text-center text-xs text-gray-400 mt-4">تجريبي: admin@noon_sa.com / noon2024</p>
+  </div>
+</div>
+
+<div class="flex">
+  <!-- Sidebar -->
+  <aside class="sidebar w-60 fixed right-0 top-0 h-full text-white flex flex-col z-40 hidden md:flex">
+    <div class="p-5 border-b border-white/10">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-bold text-xl">S</div>
+        <div>
+          <div class="font-bold">Sentiment Arabia</div>
+          <div id="companyNameSidebar" class="text-xs text-slate-400 mt-0.5">...</div>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 p-4 space-y-1 text-sm">
+      <a href="#overview" onclick="showTab('overview')" id="tab-overview"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer nav-active">
+        <i class="fas fa-th-large w-4"></i>نظرة عامة
+      </a>
+      <a href="#products" onclick="showTab('products')" id="tab-products"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 cursor-pointer transition">
+        <i class="fas fa-box w-4"></i>منتجاتي
+      </a>
+      <a href="#analyses" onclick="showTab('analyses')" id="tab-analyses"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 cursor-pointer transition">
+        <i class="fas fa-brain w-4"></i>التحليلات
+      </a>
+      <a href="#webhook" onclick="showTab('webhook')" id="tab-webhook"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 cursor-pointer transition">
+        <i class="fas fa-plug w-4"></i>Webhook
+      </a>
+      <a href="/alerts" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition">
+        <i class="fas fa-bell w-4"></i>التنبيهات
+        <span id="alertBadge" class="hidden bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 mr-auto">0</span>
+      </a>
+      <hr class="border-white/10 my-2">
+      <a href="/" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition">
+        <i class="fas fa-search w-4"></i>بحث المنتجات
+      </a>
+      <a href="/compare" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition">
+        <i class="fas fa-balance-scale w-4"></i>مقارنة
+      </a>
+    </nav>
+    <div class="p-4 border-t border-white/10">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="ws-dot" id="wsDot"></span>
+        <span class="text-xs text-slate-400" id="wsStatus">غير متصل</span>
+      </div>
+      <button onclick="logout()" class="w-full bg-red-600/20 hover:bg-red-600/40 text-red-400 px-3 py-2 rounded-lg text-sm transition">
+        <i class="fas fa-sign-out-alt ml-1"></i>تسجيل خروج
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 md:mr-60 p-6">
+    <!-- Top bar -->
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-black text-gray-800" id="pageTitle">نظرة عامة</h1>
+        <div class="text-sm text-gray-500">آخر تحديث: <span id="lastUpdate">-</span></div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="refreshDashboard()" class="bg-white border border-gray-200 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition">
+          <i class="fas fa-sync-alt ml-1"></i>تحديث
+        </button>
+        <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold" id="planBadge">Free</span>
+      </div>
+    </div>
+
+    <!-- ── Overview Tab ── -->
+    <div id="pane-overview">
+      <!-- KPI Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="stat-card metric-positive">
+          <div class="text-3xl font-black text-green-600" id="kpi-positive">-</div>
+          <div class="text-sm text-gray-500 mt-1">تحليل إيجابي</div>
+          <div class="text-xs text-gray-400" id="kpi-positive-pct">-</div>
+        </div>
+        <div class="stat-card metric-negative">
+          <div class="text-3xl font-black text-red-500" id="kpi-negative">-</div>
+          <div class="text-sm text-gray-500 mt-1">تحليل سلبي</div>
+          <div class="text-xs text-gray-400" id="kpi-negative-pct">-</div>
+        </div>
+        <div class="stat-card metric-neutral">
+          <div class="text-3xl font-black text-yellow-500" id="kpi-total">-</div>
+          <div class="text-sm text-gray-500 mt-1">إجمالي التحليلات</div>
+          <div class="text-xs text-gray-400" id="kpi-usage">-</div>
+        </div>
+        <div class="stat-card metric-blue">
+          <div class="text-3xl font-black text-blue-600" id="kpi-fraud">-</div>
+          <div class="text-sm text-gray-500 mt-1">تنبيهات احتيال</div>
+          <div class="text-xs text-red-400" id="kpi-fraud-sub">تحتاج مراجعة</div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div class="bg-white rounded-2xl shadow p-5">
+          <h3 class="font-bold text-gray-700 mb-4"><i class="fas fa-chart-pie ml-2 text-blue-500"></i>توزيع المشاعر</h3>
+          <canvas id="pieChart" height="250"></canvas>
+        </div>
+        <div class="bg-white rounded-2xl shadow p-5">
+          <h3 class="font-bold text-gray-700 mb-4"><i class="fas fa-chart-line ml-2 text-green-500"></i>اتجاهات 7 أيام</h3>
+          <canvas id="trendChart" height="250"></canvas>
+        </div>
+      </div>
+
+      <!-- Top/Worst Products -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div class="bg-white rounded-2xl shadow p-5">
+          <h3 class="font-bold text-gray-700 mb-4 text-green-600"><i class="fas fa-trophy ml-2"></i>أفضل المنتجات</h3>
+          <div id="topProducts" class="space-y-3"></div>
+        </div>
+        <div class="bg-white rounded-2xl shadow p-5">
+          <h3 class="font-bold text-gray-700 mb-4 text-red-500"><i class="fas fa-exclamation-triangle ml-2"></i>تحتاج تحسين</h3>
+          <div id="worstProducts" class="space-y-3"></div>
+        </div>
+      </div>
+
+      <!-- Top Aspects -->
+      <div class="bg-white rounded-2xl shadow p-5 mb-6">
+        <h3 class="font-bold text-gray-700 mb-4"><i class="fas fa-tags ml-2 text-purple-500"></i>الجوانب الأكثر ذكراً</h3>
+        <div id="aspectsCloud" class="flex flex-wrap gap-2"></div>
+      </div>
+
+      <!-- Live Feed -->
+      <div class="bg-white rounded-2xl shadow p-5">
+        <h3 class="font-bold text-gray-700 mb-4 flex items-center gap-2">
+          <i class="fas fa-broadcast-tower text-blue-500"></i>التغذية الحية
+          <span class="ws-dot" id="wsDot2"></span>
+        </h3>
+        <div id="liveFeed" class="space-y-2 max-h-48 overflow-y-auto text-sm text-gray-600">
+          <div class="text-gray-400 text-center py-4">في انتظار الأحداث الحية...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Products Tab ── -->
+    <div id="pane-products" style="display:none">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-bold text-gray-700">منتجات شركتي</h2>
+        <button onclick="document.getElementById('addProductModal').style.display='flex'"
+          class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
+          <i class="fas fa-plus ml-1"></i>إضافة منتج
+        </button>
+      </div>
+      <div id="myProductsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </div>
+
+    <!-- ── Analyses Tab ── -->
+    <div id="pane-analyses" style="display:none">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-bold text-gray-700">التحليلات الأخيرة</h2>
+        <div class="flex gap-2">
+          <select id="sentFilter" onchange="loadAnalyses()" class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm outline-none">
+            <option value="">الكل</option>
+            <option value="positive">إيجابي</option>
+            <option value="negative">سلبي</option>
+            <option value="neutral">محايد</option>
+          </select>
+        </div>
+      </div>
+      <div id="analysesList" class="space-y-3"></div>
+    </div>
+
+    <!-- ── Webhook Tab ── -->
+    <div id="pane-webhook" style="display:none">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-2xl shadow p-6">
+          <h3 class="font-bold text-gray-700 mb-4"><i class="fas fa-plug ml-2 text-blue-500"></i>إعداد Webhook</h3>
+          <div id="webhookStatus" class="mb-4"></div>
+          <input id="whUrl" type="url" placeholder="https://your-site.com/webhook"
+            class="w-full border-2 border-gray-200 rounded-lg px-4 py-3 mb-3 outline-none focus:border-blue-500 text-sm">
+          <div class="space-y-2 mb-4 text-sm">
+            <label class="flex items-center gap-2"><input type="checkbox" value="comment.created" checked class="wh-event"> comment.created</label>
+            <label class="flex items-center gap-2"><input type="checkbox" value="review.submitted" checked class="wh-event"> review.submitted</label>
+            <label class="flex items-center gap-2"><input type="checkbox" value="product.rated" class="wh-event"> product.rated</label>
+            <label class="flex items-center gap-2"><input type="checkbox" value="order.completed" class="wh-event"> order.completed</label>
+          </div>
+          <button onclick="saveWebhook()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition">
+            حفظ الإعدادات
+          </button>
+        </div>
+        <div class="bg-white rounded-2xl shadow p-6">
+          <h3 class="font-bold text-gray-700 mb-4"><i class="fas fa-code ml-2 text-green-500"></i>كود التكامل (JavaScript)</h3>
+          <pre id="sdkCode" class="bg-gray-900 text-green-400 p-4 rounded-xl text-xs overflow-x-auto ltr text-left" dir="ltr">// جارٍ التحميل...</pre>
+          <button onclick="copySDK()" class="mt-3 text-sm text-blue-600 hover:text-blue-800">
+            <i class="fas fa-copy ml-1"></i>نسخ الكود
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Add Product Modal -->
+<div id="addProductModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" style="display:none">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-lg max-h-screen overflow-y-auto mx-4">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-bold text-gray-800">إضافة منتج جديد</h3>
+      <button onclick="document.getElementById('addProductModal').style.display='none'" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+    </div>
+    <div class="space-y-3">
+      <input id="pName" placeholder="اسم المنتج *" class="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 outline-none focus:border-blue-500">
+      <select id="pCategory" class="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 outline-none focus:border-blue-500">
+        <option>هواتف ذكية</option><option>حاسبات</option><option>إلكترونيات</option>
+        <option>تلفزيونات</option><option>أجهزة منزلية</option><option>أدوات</option>
+      </select>
+      <div class="grid grid-cols-2 gap-3">
+        <input id="pPrice" type="number" placeholder="السعر (ر.س)" class="border-2 border-gray-200 rounded-lg px-4 py-2.5 outline-none focus:border-blue-500">
+        <input id="pBrand" placeholder="العلامة التجارية" class="border-2 border-gray-200 rounded-lg px-4 py-2.5 outline-none focus:border-blue-500">
+      </div>
+      <textarea id="pDesc" rows="2" placeholder="وصف المنتج" class="w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 outline-none focus:border-blue-500 resize-none"></textarea>
+      <div class="grid grid-cols-2 gap-3">
+        <input id="pSku" placeholder="رمز المنتج (SKU)" class="border-2 border-gray-200 rounded-lg px-4 py-2.5 outline-none focus:border-blue-500">
+        <input id="pShipping" type="number" placeholder="أيام الشحن" class="border-2 border-gray-200 rounded-lg px-4 py-2.5 outline-none focus:border-blue-500">
+      </div>
+    </div>
+    <div class="flex gap-3 mt-5">
+      <button onclick="addProduct()" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700">
+        <i class="fas fa-plus ml-1"></i>إضافة
+      </button>
+      <button onclick="document.getElementById('addProductModal').style.display='none'"
+        class="flex-1 border-2 border-gray-200 text-gray-600 py-3 rounded-lg hover:bg-gray-50">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+let token = localStorage.getItem('sa_token');
+let companyId = null;
+let pieChartInst = null, trendChartInst = null;
+let ws = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!token) {
+    window.location.href = '/login';
+    return;
+  }
+  loadDashboard();
+});
+
+async function loadDashboard() {
+  try {
+    const r = await fetch(API + '/api/v1/company/dashboard', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    if (r.status === 401) { logout(); return; }
+    const d = await r.json();
+    companyId = d.company?.id;
+    document.getElementById('companyNameSidebar').textContent = d.company?.name || '';
+    document.getElementById('planBadge').textContent = (d.plan || 'free').toUpperCase();
+    document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('ar-SA');
+    renderOverview(d);
+    connectWebSocket(companyId);
+    loadMyProducts();
+  } catch(e) {
+    console.error(e);
+    window.location.href = '/login';
+  }
+}
+
+function renderOverview(d) {
+  const t = d.totals || {};
+  document.getElementById('kpi-positive').textContent = t.positive || 0;
+  document.getElementById('kpi-positive-pct').textContent = (t.positive_pct || 0) + '% من الإجمالي';
+  document.getElementById('kpi-negative').textContent = t.negative || 0;
+  document.getElementById('kpi-negative-pct').textContent = (t.negative_pct || 0) + '% من الإجمالي';
+  document.getElementById('kpi-total').textContent = t.analyses || 0;
+  document.getElementById('kpi-usage').textContent = `${d.usage?.used||0} / ${d.usage?.limit||1000}`;
+  document.getElementById('kpi-fraud').textContent = d.fraud_alerts_count || 0;
+  if (d.fraud_alerts_count > 0) document.getElementById('alertBadge').textContent = d.fraud_alerts_count;
+  if (d.fraud_alerts_count > 0) document.getElementById('alertBadge').classList.remove('hidden');
+
+  // Pie Chart
+  if (pieChartInst) pieChartInst.destroy();
+  const pc = document.getElementById('pieChart').getContext('2d');
+  pieChartInst = new Chart(pc, {
+    type: 'doughnut',
+    data: {
+      labels: ['إيجابي','سلبي','محايد'],
+      datasets: [{
+        data: [t.positive||0, t.negative||0, t.neutral||0],
+        backgroundColor: ['#10b981','#ef4444','#f59e0b'],
+        borderWidth: 3, borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true, cutout: '65%',
+      plugins: {
+        legend: { labels: { font: { family: 'Cairo', size: 13 } } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed}` } }
+      }
+    }
+  });
+
+  // Trend Chart
+  if (trendChartInst) trendChartInst.destroy();
+  const tc = document.getElementById('trendChart').getContext('2d');
+  const trends = d.trends || [];
+  trendChartInst = new Chart(tc, {
+    type: 'line',
+    data: {
+      labels: trends.map(t => t.day || ''),
+      datasets: [
+        { label: 'إيجابي', data: trends.map(t => t.positive||0), borderColor: '#10b981', tension: 0.4, fill: true, backgroundColor: '#10b98120' },
+        { label: 'سلبي',   data: trends.map(t => t.negative||0), borderColor: '#ef4444', tension: 0.4, fill: true, backgroundColor: '#ef444420' },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { font: { family: 'Cairo' } } } },
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+
+  // Top Products
+  const topEl = document.getElementById('topProducts');
+  topEl.innerHTML = (d.top_products || []).map(p => `
+    <div class="flex items-center justify-between py-2 border-b border-gray-100">
+      <span class="text-sm font-medium text-gray-700 truncate flex-1">${p.name}</span>
+      <div class="flex items-center gap-2 mr-2">
+        <div class="bg-gray-100 rounded-full h-2 w-16">
+          <div class="bg-green-500 h-2 rounded-full" style="width:${p.recommendation_score||0}%"></div>
+        </div>
+        <span class="text-xs font-bold text-green-600 w-8">${Math.round(p.recommendation_score||0)}%</span>
+      </div>
+    </div>`).join('') || '<div class="text-gray-400 text-sm text-center py-4">لا توجد بيانات</div>';
+
+  const worstEl = document.getElementById('worstProducts');
+  worstEl.innerHTML = (d.worst_products || []).map(p => `
+    <div class="flex items-center justify-between py-2 border-b border-gray-100">
+      <span class="text-sm font-medium text-gray-700 truncate flex-1">${p.name}</span>
+      <div class="flex items-center gap-2 mr-2">
+        <div class="bg-gray-100 rounded-full h-2 w-16">
+          <div class="bg-red-400 h-2 rounded-full" style="width:${p.negative_pct||0}%"></div>
+        </div>
+        <span class="text-xs font-bold text-red-500 w-10">${Math.round(p.negative_pct||0)}% سلبي</span>
+      </div>
+    </div>`).join('') || '<div class="text-gray-400 text-sm text-center py-4">لا توجد مشاكل!</div>';
+
+  // Aspects
+  const ac = document.getElementById('aspectsCloud');
+  const aspectColors = ['bg-blue-100 text-blue-700','bg-green-100 text-green-700','bg-yellow-100 text-yellow-700',
+                        'bg-purple-100 text-purple-700','bg-pink-100 text-pink-700','bg-orange-100 text-orange-700'];
+  ac.innerHTML = (d.top_aspects || []).map(([name, count], i) =>
+    `<span class="${aspectColors[i%aspectColors.length]} px-3 py-1 rounded-full text-sm font-medium">${name} (${count})</span>`
+  ).join('') || '<span class="text-gray-400 text-sm">لا توجد جوانب محددة</span>';
+}
+
+async function loadMyProducts() {
+  const r = await fetch(API + '/api/v1/company/products', {
+    headers: { Authorization: 'Bearer ' + token }
+  });
+  const d = await r.json();
+  const grid = document.getElementById('myProductsGrid');
+  grid.innerHTML = (d.products || []).map(p => `
+    <div class="bg-white border border-gray-200 rounded-xl p-4 slide-in">
+      <div class="flex items-start justify-between mb-2">
+        <h3 class="font-bold text-gray-900 text-sm leading-tight">${p.name}</h3>
+        <span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded">${p.category}</span>
+      </div>
+      <div class="text-xl font-black text-blue-600 mb-2">${p.price?.toLocaleString()||0} ر.س</div>
+      <div class="flex gap-1 mb-2">
+        <div class="flex-1 bg-green-500 h-2 rounded-full" style="width:${p.positive_pct||0}%; min-width:4px" title="إيجابي"></div>
+        <div class="flex-1 bg-red-400  h-2 rounded-full" style="width:${p.negative_pct||0}%; min-width:4px" title="سلبي"></div>
+        <div class="flex-1 bg-yellow-400 h-2 rounded-full" style="width:${p.neutral_pct||0}%; min-width:4px" title="محايد"></div>
+      </div>
+      <div class="flex items-center justify-between text-xs text-gray-500">
+        <span>${p.review_count||0} مراجعة</span>
+        <span>${p.availability ? '✅ متوفر' : '❌ غير متوفر'}</span>
+        <span class="font-bold text-blue-600">${Math.round(p.recommendation_score||0)}%</span>
+      </div>
+    </div>`).join('') || '<div class="col-span-3 text-center text-gray-400 py-10">لا توجد منتجات. أضف منتجك الأول!</div>';
+}
+
+async function loadAnalyses() {
+  const filter = document.getElementById('sentFilter')?.value || '';
+  const url = API + '/api/v1/company/analyses?limit=30' + (filter ? '&sentiment=' + filter : '');
+  const r = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
+  const d = await r.json();
+  const list = document.getElementById('analysesList');
+  const sentColors = { positive: 'bg-green-50 border-green-200', negative: 'bg-red-50 border-red-200', neutral: 'bg-yellow-50 border-yellow-200' };
+  const sentLabels = { positive: '😊 إيجابي', negative: '😞 سلبي', neutral: '😐 محايد' };
+  list.innerHTML = (d.analyses || []).map(a => `
+    <div class="border ${sentColors[a.sentiment]||'bg-gray-50 border-gray-200'} rounded-xl p-4 slide-in">
+      <div class="flex items-start justify-between gap-3 mb-2">
+        <p class="text-gray-800 text-sm flex-1">${a.text}</p>
+        <span class="text-xs font-bold whitespace-nowrap">${sentLabels[a.sentiment]||a.sentiment} ${Math.round(a.confidence*100)}%</span>
+      </div>
+      <div class="flex items-center gap-3 text-xs text-gray-400">
+        <span>${a.created_at?.split('T')[0]||''}</span>
+        <span>${a.source||'api'}</span>
+        ${a.fraud_score > 0.3 ? `<span class="text-red-500 font-medium">⚠️ احتيال ${Math.round(a.fraud_score*100)}%</span>` : ''}
+        ${Object.keys(a.aspects||{}).length ? `<span class="text-purple-500">جوانب: ${Object.keys(a.aspects).join('،')}</span>` : ''}
+      </div>
+    </div>`).join('') || '<div class="text-center text-gray-400 py-10">لا توجد تحليلات</div>';
+}
+
+async function addProduct() {
+  const data = {
+    name: document.getElementById('pName').value,
+    category: document.getElementById('pCategory').value,
+    price: parseFloat(document.getElementById('pPrice').value) || 0,
+    brand: document.getElementById('pBrand').value,
+    description: document.getElementById('pDesc').value,
+    sku: document.getElementById('pSku').value,
+    shipping_days: parseInt(document.getElementById('pShipping').value) || 3,
+    availability: 1
+  };
+  if (!data.name) { alert('اسم المنتج مطلوب'); return; }
+  const r = await fetch(API + '/api/v1/company/products', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+    body: JSON.stringify(data)
+  });
+  if (r.ok) {
+    document.getElementById('addProductModal').style.display = 'none';
+    loadMyProducts();
+    alert('✅ تمت إضافة المنتج بنجاح');
+  } else {
+    const err = await r.json();
+    alert('خطأ: ' + (err.detail || 'تعذر الإضافة'));
+  }
+}
+
+async function loadWebhook() {
+  const r = await fetch(API + '/api/v1/webhooks/config', { headers: { Authorization: 'Bearer ' + token } });
+  const d = await r.json();
+  const status = document.getElementById('webhookStatus');
+  if (d.configured) {
+    status.innerHTML = `<div class="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-700 mb-3">
+      ✅ Webhook مُفعّل | ${d.total_calls||0} استدعاء | ${d.failed_calls||0} فشل</div>`;
+    document.getElementById('whUrl').value = d.url || '';
+
+    // SDK
+    const company = JSON.parse(atob(token.split('.')[1]));
+    const apiKey = d.secret || 'YOUR_SECRET';
+    document.getElementById('sdkCode').textContent = generateSDK(company.company_id, apiKey);
+  } else {
+    status.innerHTML = `<div class="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-500">لم يتم إعداد Webhook بعد</div>`;
+  }
+}
+
+function generateSDK(companyId, secret) {
+  return `// Sentiment Arabia SDK
+const SentimentArabia = {
+  companyId: '${companyId}',
+  apiUrl: '${window.location.origin}/api/v1/webhooks/receive/${companyId}',
+  
+  async send(event, data) {
+    const body = JSON.stringify({ event, ...data, timestamp: Date.now() });
+    const signature = await this.sign(body);
+    
+    await fetch(this.apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Event': event,
+        'X-Signature': signature
+      },
+      body
+    });
+  },
+  
+  async sign(body) {
+    const key = await crypto.subtle.importKey(
+      'raw', new TextEncoder().encode('${secret}'),
+      { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+    );
+    const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(body));
+    return 'sha256=' + [...new Uint8Array(sig)].map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+};
+
+// مثال الاستخدام:
+SentimentArabia.send('comment.created', {
+  text: 'المنتج ممتاز جداً!',
+  product_id: 1
+});`;
+}
+
+async function saveWebhook() {
+  const url = document.getElementById('whUrl').value;
+  if (!url) { alert('أدخل رابط Webhook'); return; }
+  const events = [...document.querySelectorAll('.wh-event:checked')].map(e => e.value);
+  const r = await fetch(API + '/api/v1/webhooks/config', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+    body: JSON.stringify({ url, events })
+  });
+  if (r.ok) { alert('✅ تم حفظ Webhook'); loadWebhook(); }
+}
+
+function copySDK() {
+  navigator.clipboard.writeText(document.getElementById('sdkCode').textContent);
+  alert('تم نسخ الكود!');
+}
+
+// ── Tabs ───────────────────────────────────────────────────────────────
+function showTab(name) {
+  ['overview','products','analyses','webhook'].forEach(t => {
+    document.getElementById('pane-' + t).style.display = t === name ? '' : 'none';
+    const tab = document.getElementById('tab-' + t);
+    if (tab) {
+      tab.className = tab.className.replace('nav-active','').replace('text-slate-300','') + (t === name ? ' nav-active' : ' text-slate-300');
+    }
+  });
+  const titles = { overview: 'نظرة عامة', products: 'منتجاتي', analyses: 'التحليلات', webhook: 'إعدادات Webhook' };
+  document.getElementById('pageTitle').textContent = titles[name] || '';
+  if (name === 'analyses') loadAnalyses();
+  if (name === 'webhook') loadWebhook();
+}
+
+// ── WebSocket ──────────────────────────────────────────────────────────
+function connectWebSocket(cid) {
+  if (!cid) return;
+  const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  ws = new WebSocket(`${proto}//${window.location.host}/ws/${cid}`);
+  ws.onopen = () => {
+    ['wsDot','wsDot2'].forEach(id => { const el=document.getElementById(id); if(el) el.classList.add('connected'); });
+    document.getElementById('wsStatus').textContent = 'متصل حي';
+    setInterval(() => ws.readyState === 1 && ws.send('ping'), 30000);
+  };
+  ws.onmessage = e => {
+    if (e.data === 'pong') return;
+    try {
+      const d = JSON.parse(e.data);
+      const feed = document.getElementById('liveFeed');
+      const sentMap = { positive: '😊', negative: '😞', neutral: '😐' };
+      const entry = document.createElement('div');
+      entry.className = 'flex items-center gap-2 py-1.5 border-b border-gray-100 slide-in';
+      entry.innerHTML = `
+        <span class="text-lg">${sentMap[d.sentiment]||'📝'}</span>
+        <span class="flex-1">${d.event} - ${d.sentiment} (${Math.round(d.confidence*100)}%)</span>
+        <span class="text-xs text-gray-400">${new Date(d.timestamp).toLocaleTimeString('ar-SA')}</span>`;
+      feed.insertBefore(entry, feed.firstChild);
+      if (feed.children.length > 20) feed.removeChild(feed.lastChild);
+    } catch(e) {}
+  };
+  ws.onclose = () => {
+    ['wsDot','wsDot2'].forEach(id => { const el=document.getElementById(id); if(el) el.classList.remove('connected'); });
+    document.getElementById('wsStatus').textContent = 'غير متصل';
+    setTimeout(() => connectWebSocket(cid), 5000);
+  };
+}
+
+function refreshDashboard() { loadDashboard(); }
+
+function logout() {
+  localStorage.removeItem('sa_token');
+  window.location.href = '/login';
+}
+</script>
+</body>
+</html>
